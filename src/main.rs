@@ -1,3 +1,9 @@
+use clap::Parser;
+
+use lib_ria::cli::Args;
+
 fn main() {
-    println!("Hello, world!");
+    let args = Args::parse();
+
+    println!("{:?}", args);
 }
