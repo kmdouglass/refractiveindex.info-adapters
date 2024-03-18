@@ -1,0 +1,8 @@
+[package]
+name = "ria"
+version = "0.1.0"
+edition = "2021"
+authors = ["Kyle M. Douglass <kyle.m.douglass@gmail.com>"]
+repository = "https://github.com/kmdouglass/refractiveindex.info-adapters"
+
+[dependencies]
