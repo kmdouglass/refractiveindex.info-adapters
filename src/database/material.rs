@@ -4,6 +4,12 @@ use serde_yaml::Value;
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
 enum Data {
+    #[serde(rename = "tabulated k")]
+    TabulatedK { data: String },
+
+    #[serde(rename = "tabulated nk")]
+    TabulatedNK { data: String },
+
     #[serde(rename = "formula 1")]
     Formula1 {
         wavelength_range: String,
@@ -22,11 +28,41 @@ enum Data {
         coefficients: String,
     },
 
-    #[serde(rename = "tabulated k")]
-    TabulatedK { data: String },
+    #[serde(rename = "formula 4")]
+    Formula4 {
+        wavelength_range: String,
+        coefficients: String,
+    },
 
-    #[serde(rename = "tabulated nk")]
-    TabulatedNK { data: String },
+    #[serde(rename = "formula 5")]
+    Formula5 {
+        wavelength_range: String,
+        coefficients: String,
+    },
+
+    #[serde(rename = "formula 6")]
+    Formula6 {
+        wavelength_range: String,
+        coefficients: String,
+    },
+
+    #[serde(rename = "formula 7")]
+    Formula7 {
+        wavelength_range: String,
+        coefficients: String,
+    },
+
+    #[serde(rename = "formula 8")]
+    Formula8 {
+        wavelength_range: String,
+        coefficients: String,
+    },
+
+    #[serde(rename = "formula 9")]
+    Formula9 {
+        wavelength_range: String,
+        coefficients: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
