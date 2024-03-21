@@ -66,7 +66,7 @@ mod tests {
     }
 
     #[test]
-    fn test_read_catalog() {
-        let results: Catalog = serde_yaml::from_str(yaml()).unwrap();
+    fn test_deserialize_catalog() {
+        let _: Catalog = serde_yaml::from_str(yaml()).unwrap();
     }
 }

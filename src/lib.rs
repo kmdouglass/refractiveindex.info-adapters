@@ -1,3 +1,3 @@
-mod catalog;
 pub mod cli;
-mod inputs;
+mod database;
+mod internal;
