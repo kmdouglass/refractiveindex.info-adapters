@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-type Catalog = Vec<Shelf>;
+pub type Catalog = Vec<Shelf>;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
-enum BookContent {
+pub enum BookContent {
     Divider {
         #[serde(rename = "DIVIDER")]
         divider: String,
@@ -19,7 +19,7 @@ enum BookContent {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
-enum ShelfContent {
+pub enum ShelfContent {
     Divider {
         #[serde(rename = "DIVIDER")]
         divider: String,
@@ -34,7 +34,7 @@ enum ShelfContent {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Shelf {
+pub struct Shelf {
     #[serde(rename = "SHELF")]
     shelf: String,
     name: String,

@@ -3,9 +3,12 @@ use serde_yaml::Value;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
-enum Data {
+pub enum Data {
     #[serde(rename = "tabulated k")]
     TabulatedK { data: String },
+
+    #[serde(rename = "tabulated n")]
+    TabulatedN { data: String },
 
     #[serde(rename = "tabulated nk")]
     TabulatedNK { data: String },
@@ -66,7 +69,7 @@ enum Data {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Material {
+pub struct Material {
     #[serde(rename = "REFERENCES")]
     references: String,
 
@@ -74,7 +77,7 @@ struct Material {
     comments: String,
 
     #[serde(rename = "DATA")]
-    data: Vec<Data>,
+    pub data: Vec<Data>,
 
     #[serde(rename = "SPECS")]
     specs: Option<Value>,
