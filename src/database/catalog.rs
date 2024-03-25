@@ -36,9 +36,9 @@ pub enum ShelfContent {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Shelf {
     #[serde(rename = "SHELF")]
-    shelf: String,
-    name: String,
-    content: Vec<ShelfContent>,
+    pub shelf: String,
+    pub name: String,
+    pub content: Vec<ShelfContent>,
 }
 
 #[cfg(test)]

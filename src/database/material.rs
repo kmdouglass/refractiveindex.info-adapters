@@ -71,16 +71,16 @@ pub enum Data {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Material {
     #[serde(rename = "REFERENCES")]
-    references: String,
+    pub references: String,
 
     #[serde(rename = "COMMENTS")]
-    comments: String,
+    pub comments: String,
 
     #[serde(rename = "DATA")]
     pub data: Vec<Data>,
 
     #[serde(rename = "SPECS")]
-    specs: Option<Value>,
+    pub specs: Option<Value>,
 }
 
 #[cfg(test)]

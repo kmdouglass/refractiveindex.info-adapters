@@ -1,26 +1,28 @@
 use std::collections::HashMap;
 
 use crate::database::Data as UnparsedData;
-use crate::database::{Catalog, Material};
+use crate::database::{BookContent, Catalog, Material, ShelfContent};
 
 use super::parsers::{
-    parse_coefficients, parse_tabulated_2d, parse_tabulated_3d, parse_wavelength_range,
+    parse_coefficients, parse_material, parse_tabulated_2d, parse_tabulated_3d,
+    parse_wavelength_range,
 };
+use super::readers::read_material;
 
-struct Store {
+pub struct Store {
     inner: HashMap<String, Item>,
 }
 
-struct Item {
-    shelf: String,
-    book: String,
-    page: String,
-    comments: String,
-    references: String,
-    data: Data,
+pub(super) struct Item {
+    pub shelf: String,
+    pub book: String,
+    pub page: String,
+    pub comments: String,
+    pub references: String,
+    pub data: Vec<Data>,
 }
 
-enum Data {
+pub(super) enum Data {
     TabulatedK {
         data: Vec<[f64; 2]>,
     },
@@ -76,13 +78,68 @@ impl Store {
     }
 }
 
-impl From<Catalog> for Store {
-    fn from(catalog: Catalog) -> Self {
+impl TryFrom<Catalog> for Store {
+    type Error = anyhow::Error;
+
+    fn try_from(catalog: Catalog) -> Result<Self, Self::Error> {
         let mut store = Store::new();
 
-        unimplemented!();
+        for shelf in catalog {
+            let shelf_key = &shelf.shelf;
+            let shelf_name = &shelf.name;
 
-        store
+            for shelf_content in shelf.content {
+                match shelf_content {
+                    ShelfContent::Divider { divider } => {
+                        // store divider
+                    }
+                    ShelfContent::Book {
+                        book,
+                        name,
+                        info,
+                        content,
+                    } => {
+                        let book_key = &book;
+                        let book_name = &name;
+
+                        for book_content in content {
+                            match book_content {
+                                BookContent::Divider { divider } => {
+                                    // store divider
+                                }
+                                BookContent::Page { page, name, data } => {
+                                    let page_key = &page;
+                                    let page_name = &name;
+
+                                    // Try to read the material data; if it fails, skip this page
+                                    let material = match read_material(data) {
+                                        Ok(material) => material,
+                                        Err(_) => {
+                                            continue;
+                                        }
+                                    };
+
+                                    // Parse the material data
+                                    let item = match parse_material(
+                                        material, shelf_name, book_name, page_name,
+                                    ) {
+                                        Ok(item) => item,
+                                        Err(_) => {
+                                            continue;
+                                        }
+                                    };
+
+                                    let key = format!("{}:{}:{}", shelf_key, book_key, page_key);
+                                    store.inner.insert(key, item);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(store)
     }
 }
 

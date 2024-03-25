@@ -1,12 +1,37 @@
 use anyhow::{anyhow, Result};
 
-pub fn parse_coefficients(data: &str) -> Result<Vec<f64>> {
+use crate::database::Material;
+
+use super::store::Item;
+
+pub(super) fn parse_material(
+    material: Material,
+    shelf: &str,
+    book: &str,
+    page: &str,
+) -> Result<Item> {
+    let data = material
+        .data
+        .into_iter()
+        .map(|data| data.try_into())
+        .collect::<Result<Vec<_>>>()?;
+    Ok(Item {
+        shelf: shelf.to_string(),
+        book: book.to_string(),
+        page: page.to_string(),
+        references: material.references,
+        comments: material.comments,
+        data,
+    })
+}
+
+pub(super) fn parse_coefficients(data: &str) -> Result<Vec<f64>> {
     data.split_whitespace()
         .map(|s| s.parse::<f64>().map_err(|e| e.into()))
         .collect()
 }
 
-pub fn parse_wavelength_range(data: &str) -> Result<[f64; 2]> {
+pub(super) fn parse_wavelength_range(data: &str) -> Result<[f64; 2]> {
     let mut iter = data.split_whitespace();
     let start = iter
         .next()
@@ -19,7 +44,7 @@ pub fn parse_wavelength_range(data: &str) -> Result<[f64; 2]> {
     Ok([start, end])
 }
 
-pub fn parse_tabulated_2d(data: &str) -> Result<Vec<[f64; 2]>> {
+pub(super) fn parse_tabulated_2d(data: &str) -> Result<Vec<[f64; 2]>> {
     data.lines()
         .map(|line| {
             let mut iter = line.split_whitespace();
@@ -36,7 +61,7 @@ pub fn parse_tabulated_2d(data: &str) -> Result<Vec<[f64; 2]>> {
         .collect()
 }
 
-pub fn parse_tabulated_3d(data: &str) -> Result<Vec<[f64; 3]>> {
+pub(super) fn parse_tabulated_3d(data: &str) -> Result<Vec<[f64; 3]>> {
     data.lines()
         .map(|line| {
             let mut iter = line.split_whitespace();
