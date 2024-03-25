@@ -95,20 +95,20 @@ impl TryFrom<Catalog> for Store {
 
             for shelf_content in shelf.content {
                 match shelf_content {
-                    ShelfContent::Divider { divider } => {
+                    ShelfContent::Divider { divider: _ } => {
                         // store divider
                     }
                     ShelfContent::Book {
                         book,
                         name,
-                        info,
+                        info: _,
                         content,
                     } => {
                         let book_key = &book;
                         let book_name = &name;
 
                         for book_content in content {
-                            let (page, name, data, info) = match book_content {
+                            let (page, name, data, _info) = match book_content {
                                 BookContent::Divider { divider: _ } => {
                                     // Skip the divider for now
                                     continue;
