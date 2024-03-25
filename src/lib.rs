@@ -1,3 +1,5 @@
 pub mod cli;
-mod database;
+pub mod database;
 mod internal;
+
+pub use internal::store::Store;

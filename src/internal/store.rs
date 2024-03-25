@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::database::Data as UnparsedData;
-use crate::database::{BookContent, Catalog, Material, ShelfContent};
+use crate::database::{BookContent, Catalog, ShelfContent};
 
 use super::parsers::{
     parse_coefficients, parse_material, parse_tabulated_2d, parse_tabulated_3d,

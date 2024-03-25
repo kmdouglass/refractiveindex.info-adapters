@@ -10,6 +10,8 @@ pub(super) fn parse_material(
     book: &str,
     page: &str,
 ) -> Result<Item> {
+    // TODO: Ignore any errors and continue parsing;
+    // TODO: Log the errors
     let data = material
         .data
         .into_iter()
