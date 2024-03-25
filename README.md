@@ -1,6 +1,6 @@
 # refractiveindex.info-adapters
 
-Adapters to transform the refractiveindex.info database into other forms
+Adapters to transform the refractiveindex.info database into key-value stores
 
 ## Development
 
@@ -33,4 +33,11 @@ git submodule update
 cd refractiveindex.info-database
 git fetch
 git merge origin/main
+```
+
+### Test and format
+
+```console
+cargo test
+cargo fmt
 ```

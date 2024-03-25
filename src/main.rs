@@ -19,8 +19,11 @@ fn main() -> Result<()> {
     let catalog: Catalog = serde_yaml::from_reader(reader)?;
     let store = Store::try_from(catalog)?;
 
-    // Write the store to the output file
-    // TODO: Implement this
+    // Write the store to the output file in JSON format
+    let file = std::fs::File::create(&args.output)?;
+    let writer = std::io::BufWriter::new(file);
+
+    serde_json::to_writer_pretty(writer, &store)?;
 
     Ok(())
 }

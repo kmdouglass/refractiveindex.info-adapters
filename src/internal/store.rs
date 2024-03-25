@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use serde::{Deserialize, Serialize};
+
 use crate::database::Data as UnparsedData;
 use crate::database::{BookContent, Catalog, ShelfContent};
 
@@ -9,10 +11,12 @@ use super::parsers::{
 };
 use super::readers::read_material;
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Store {
     inner: HashMap<String, Item>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub(super) struct Item {
     pub shelf: String,
     pub book: String,
@@ -22,6 +26,7 @@ pub(super) struct Item {
     pub data: Vec<Data>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub(super) enum Data {
     TabulatedK {
         data: Vec<[f64; 2]>,
@@ -107,7 +112,12 @@ impl TryFrom<Catalog> for Store {
                                 BookContent::Divider { divider } => {
                                     // store divider
                                 }
-                                BookContent::Page { page, name, data } => {
+                                BookContent::Page {
+                                    page,
+                                    name,
+                                    data,
+                                    info,
+                                } => {
                                     let page_key = &page;
                                     let page_name = &name;
 

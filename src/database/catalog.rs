@@ -14,6 +14,7 @@ pub enum BookContent {
         page: String,
         name: String,
         data: std::path::PathBuf,
+        info: Option<std::path::PathBuf>,
     },
 }
 
@@ -28,7 +29,7 @@ pub enum ShelfContent {
         #[serde(rename = "BOOK")]
         book: String,
         name: String,
-        info: std::path::PathBuf,
+        info: Option<std::path::PathBuf>,
         content: Vec<BookContent>,
     },
 }
@@ -38,6 +39,7 @@ pub struct Shelf {
     #[serde(rename = "SHELF")]
     pub shelf: String,
     pub name: String,
+    pub info: Option<std::path::PathBuf>,
     pub content: Vec<ShelfContent>,
 }
 
