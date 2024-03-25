@@ -108,41 +108,47 @@ impl TryFrom<Catalog> for Store {
                         let book_name = &name;
 
                         for book_content in content {
-                            match book_content {
-                                BookContent::Divider { divider } => {
-                                    // store divider
+                            let (page, name, data, info) = match book_content {
+                                BookContent::Divider { divider: _ } => {
+                                    // Skip the divider for now
+                                    continue;
                                 }
                                 BookContent::Page {
                                     page,
                                     name,
                                     data,
                                     info,
-                                } => {
-                                    let page_key = &page;
-                                    let page_name = &name;
+                                } => (page, name, data, info),
+                                BookContent::PageNumberName {
+                                    page,
+                                    name,
+                                    data,
+                                    info,
+                                } => (page.to_string(), name, data, info),
+                            };
 
-                                    // Try to read the material data; if it fails, skip this page
-                                    let material = match read_material(data) {
-                                        Ok(material) => material,
-                                        Err(_) => {
-                                            continue;
-                                        }
-                                    };
+                            let page_key = &page;
+                            let page_name = &name;
 
-                                    // Parse the material data
-                                    let item = match parse_material(
-                                        material, shelf_name, book_name, page_name,
-                                    ) {
-                                        Ok(item) => item,
-                                        Err(_) => {
-                                            continue;
-                                        }
-                                    };
-
-                                    let key = format!("{}:{}:{}", shelf_key, book_key, page_key);
-                                    store.inner.insert(key, item);
+                            // Try to read the material data; if it fails, skip this page
+                            let material = match read_material(data) {
+                                Ok(material) => material,
+                                Err(_) => {
+                                    continue;
                                 }
-                            }
+                            };
+
+                            // Parse the material data
+                            let item =
+                                match parse_material(material, shelf_name, book_name, page_name) {
+                                    Ok(item) => item,
+                                    Err(_) => {
+                                        continue;
+                                    }
+                                };
+
+                            let key = format!("{}:{}:{}", shelf_key, book_key, page_key);
+                            store.inner.insert(key, item);
                         }
                     }
                 }

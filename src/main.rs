@@ -40,7 +40,7 @@ fn main() -> Result<()> {
     std::env::set_current_dir(current_dir)?;
     let file = std::fs::File::create(&args.output)?;
     let writer = std::io::BufWriter::new(file);
-    serde_json::to_writer_pretty(writer, &store)?;
+    serde_json::to_writer(writer, &store)?;
 
     Ok(())
 }

@@ -16,6 +16,13 @@ pub enum BookContent {
         data: std::path::PathBuf,
         info: Option<std::path::PathBuf>,
     },
+    PageNumberName {
+        #[serde(rename = "PAGE")]
+        page: u64,
+        name: String,
+        data: std::path::PathBuf,
+        info: Option<std::path::PathBuf>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug)]
