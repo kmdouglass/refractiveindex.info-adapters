@@ -1,3 +1,8 @@
+//! A RefractiveIndex.INFO catalog.
+//!
+//! A catalog is a hierarchical structure that contains information about the
+//! location of material data within the database. Materials are identified by a
+//! shelf, book, and page key.
 use serde::{Deserialize, Serialize};
 
 pub type Catalog = Vec<Shelf>;
