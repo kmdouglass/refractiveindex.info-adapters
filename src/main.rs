@@ -13,6 +13,7 @@ fn main() -> Result<()> {
     let current_dir = std::env::current_dir()?;
 
     // Change the current directory to the database path
+    println!("Changing directory to {}", &args.path.display());
     std::env::set_current_dir(&args.path)?;
 
     // Open the file specified in the args
@@ -37,8 +38,11 @@ fn main() -> Result<()> {
     let store = Store::try_from(catalog)?;
 
     // Write the store to the output file in JSON format
+    println!("Changing directory back to {}", &current_dir.display());
     std::env::set_current_dir(current_dir)?;
     let file = std::fs::File::create(&args.output)?;
+
+    println!("Writing to {}", &args.output.display());
     let writer = std::io::BufWriter::new(file);
     serde_json::to_writer(writer, &store)?;
 

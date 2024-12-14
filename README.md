@@ -41,3 +41,17 @@ git merge origin/main
 cargo test
 cargo fmt
 ```
+
+## Run with Cargo
+
+### Run with defaults
+
+```console
+cargo run
+```
+
+### Get help
+
+```console
+cargo run -- --help
+```
