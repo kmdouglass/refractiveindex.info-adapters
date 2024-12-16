@@ -13,7 +13,6 @@ use super::readers::read_material;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Store {
-    #[serde(flatten)]
     inner: HashMap<String, Item>,
 }
 

@@ -21,6 +21,8 @@ pub enum BookContent {
         data: std::path::PathBuf,
         info: Option<std::path::PathBuf>,
     },
+
+    // Special case for Hikari i-line glasses which have numbers as names
     PageNumberName {
         #[serde(rename = "PAGE")]
         page: u64,

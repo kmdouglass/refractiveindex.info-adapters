@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use serde_yaml::Value;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type")]
@@ -80,7 +79,7 @@ pub struct Material {
     pub data: Vec<Data>,
 
     #[serde(rename = "SPECS")]
-    pub specs: Option<Value>,
+    pub specs: Option<serde_yaml::Value>,
 }
 
 #[cfg(test)]
