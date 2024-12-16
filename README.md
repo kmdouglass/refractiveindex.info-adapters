@@ -44,10 +44,18 @@ cargo fmt
 
 ## Run with Cargo
 
-### Create a single-file store of the RefractiveIndex.info database
+### Create a single-file JSON store of the RefractiveIndex.info database
 
 ```console
 cargo run -- store
+```
+
+### Create a single-file bitcode store of the RefractiveIndex.info database
+
+- The database is in `refractiveindex.info-database/database/`
+
+```console
+cargo run -- -f bitcode store -p refractiveindex.info-database/database/
 ```
 
 ### Get help

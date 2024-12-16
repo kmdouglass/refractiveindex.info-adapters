@@ -1,10 +1,10 @@
+use std::io::{Read, Write};
 use std::path::PathBuf;
 
 use anyhow::Result;
-
 use clap::Parser;
 
-use lib_ria::cli::{Args, Catalog as CatalogChoice, Commands};
+use lib_ria::cli::{Args, Catalog as CatalogChoice, Commands, Format};
 use lib_ria::database::Catalog;
 use lib_ria::Store;
 
@@ -17,16 +17,16 @@ fn main() -> Result<()> {
             catalog,
             output,
         } => {
-            store(&path, catalog, &output)?;
+            store(&args.format, &path, catalog, &output)?;
         }
         Commands::Validate { input } => {
-            validate(&input)?;
+            validate(&args.format, &input)?;
         }
     }
     Ok(())
 }
 
-fn store(path: &PathBuf, catalog_choice: CatalogChoice, output: &PathBuf) -> Result<()> {
+fn store(format: &Format, path: &PathBuf, catalog_choice: CatalogChoice, output: &PathBuf) -> Result<()> {
     // Save the current directory
     let current_dir = std::env::current_dir()?;
 
@@ -61,19 +61,34 @@ fn store(path: &PathBuf, catalog_choice: CatalogChoice, output: &PathBuf) -> Res
     let file = std::fs::File::create(output)?;
 
     println!("Writing store to {}", output.display());
-    let writer = std::io::BufWriter::new(file);
-    serde_json::to_writer(writer, &store)?;
+    let mut writer = std::io::BufWriter::new(file);
+
+    match format {
+        Format::Json => serde_json::to_writer(writer, &store)?,
+        Format::Bitcode => {
+            let data = bitcode::serialize(&store)?;
+            writer.write(&data)?;
+        }
+    }
 
     Ok(())
 }
 
-fn validate(input: &PathBuf) -> Result<()> {
+fn validate(format: &Format, input: &PathBuf) -> Result<()> {
     // Open the file specified in the args
     let file = std::fs::File::open(input)?;
     let reader = std::io::BufReader::new(file);
 
-    // Deserialize the store JSON file
-    let _store: Store = serde_json::from_reader(reader)?;
+    // Deserialize the store file
+    let _store: Store = match format {
+        Format::Json => {
+            serde_json::from_reader(reader)?
+        }
+        Format::Bitcode => {
+            let data = reader.bytes().collect::<Result<Vec<u8>, _>>()?;
+            bitcode::deserialize(&data)?
+        }
+    };
 
     Ok(())
 }
