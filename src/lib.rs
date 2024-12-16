@@ -5,4 +5,4 @@
 pub mod database;
 mod internal;
 
-pub use internal::store::Store;
+pub use internal::store::{DispersionData, Item, Store};
