@@ -17,18 +17,20 @@ pub struct Store {
     inner: HashMap<String, Item>,
 }
 
+/// A single item in the store containing materials data.
 #[derive(Serialize, Deserialize, Debug)]
-pub(super) struct Item {
+pub struct Item {
     pub shelf: String,
     pub book: String,
     pub page: String,
     pub comments: String,
     pub references: String,
-    pub data: Vec<Data>,
+    pub data: Vec<DispersionData>,
 }
 
+/// The refractive index data associated with a material.
 #[derive(Serialize, Deserialize, Debug)]
-pub(super) enum Data {
+pub enum DispersionData {
     TabulatedK {
         data: Vec<[f64; 2]>,
     },
@@ -38,41 +40,59 @@ pub(super) enum Data {
     TabulatedNK {
         data: Vec<[f64; 3]>,
     },
+
+    /// The Sellmeier formula.
     Formula1 {
         wavelength_range: [f64; 2],
-        coefficients: Vec<f64>,
+        c: Vec<f64>,
     },
+
+    /// The Sellmeier-2 formula.
     Formula2 {
         wavelength_range: [f64; 2],
-        coefficients: Vec<f64>,
+        c: Vec<f64>,
     },
+
+    /// Polynomial
     Formula3 {
         wavelength_range: [f64; 2],
-        coefficients: Vec<f64>,
+        c: Vec<f64>,
     },
+
+    /// RefractiveIndex.INFO
     Formula4 {
         wavelength_range: [f64; 2],
-        coefficients: Vec<f64>,
+        c: Vec<f64>,
     },
+
+    /// Cauchy
     Formula5 {
         wavelength_range: [f64; 2],
-        coefficients: Vec<f64>,
+        c: Vec<f64>,
     },
+
+    /// Gases
     Formula6 {
         wavelength_range: [f64; 2],
-        coefficients: Vec<f64>,
+        c: Vec<f64>,
     },
+
+    /// Herzberger
     Formula7 {
         wavelength_range: [f64; 2],
-        coefficients: Vec<f64>,
+        c: Vec<f64>,
     },
+
+    /// Retro
     Formula8 {
         wavelength_range: [f64; 2],
-        coefficients: Vec<f64>,
+        c: Vec<f64>,
     },
+
+    /// Exotic
     Formula9 {
         wavelength_range: [f64; 2],
-        coefficients: Vec<f64>,
+        c: Vec<f64>,
     },
 }
 
@@ -81,6 +101,35 @@ impl Store {
         Store {
             inner: HashMap::new(),
         }
+    }
+
+    /// Reads a store from a reader.
+    ///
+    /// # Arguments
+    /// - `reader`: The reader to read the store from.
+    ///
+    /// # Returns
+    /// The materials data store read from the reader.
+    pub fn from_reader(reader: impl std::io::Read) -> Result<Self, anyhow::Error> {
+        let data = reader.bytes().collect::<Result<Vec<u8>, _>>()?;
+        let store: Self = bitcode::deserialize(&data)?;
+        Ok(store)
+    }
+
+    /// Returns the item from the store associated with the given key.
+    ///
+    /// # Arguments
+    /// - `key`: The key to look up in the store.
+    ///
+    /// # Returns
+    /// The item associated with the given key, if it exists.
+    pub fn get(&self, key: &str) -> Option<&Item> {
+        self.inner.get(key)
+    }
+
+    /// Returns an iterator over the keys in the store.
+    pub fn keys(&self) -> impl Iterator<Item = &String> {
+        self.inner.keys()
     }
 }
 
@@ -162,22 +211,22 @@ impl TryFrom<Catalog> for Store {
     }
 }
 
-impl TryFrom<UnparsedData> for Data {
+impl TryFrom<UnparsedData> for DispersionData {
     type Error = anyhow::Error;
 
     fn try_from(data: UnparsedData) -> Result<Self, Self::Error> {
         match data {
             UnparsedData::TabulatedK { data } => {
                 let data = parse_tabulated_2d(&data)?;
-                Ok(Data::TabulatedK { data })
+                Ok(DispersionData::TabulatedK { data })
             }
             UnparsedData::TabulatedN { data } => {
                 let data = parse_tabulated_2d(&data)?;
-                Ok(Data::TabulatedN { data })
+                Ok(DispersionData::TabulatedN { data })
             }
             UnparsedData::TabulatedNK { data } => {
                 let data = parse_tabulated_3d(&data)?;
-                Ok(Data::TabulatedNK { data })
+                Ok(DispersionData::TabulatedNK { data })
             }
             UnparsedData::Formula1 {
                 wavelength_range,
@@ -185,9 +234,9 @@ impl TryFrom<UnparsedData> for Data {
             } => {
                 let wavelength_range = parse_wavelength_range(&wavelength_range)?;
                 let coefficients = parse_coefficients(&coefficients)?;
-                Ok(Data::Formula1 {
+                Ok(DispersionData::Formula1 {
                     wavelength_range,
-                    coefficients,
+                    c: coefficients,
                 })
             }
             UnparsedData::Formula2 {
@@ -196,9 +245,9 @@ impl TryFrom<UnparsedData> for Data {
             } => {
                 let wavelength_range = parse_wavelength_range(&wavelength_range)?;
                 let coefficients = parse_coefficients(&coefficients)?;
-                Ok(Data::Formula2 {
+                Ok(DispersionData::Formula2 {
                     wavelength_range,
-                    coefficients,
+                    c: coefficients,
                 })
             }
             UnparsedData::Formula3 {
@@ -207,9 +256,9 @@ impl TryFrom<UnparsedData> for Data {
             } => {
                 let wavelength_range = parse_wavelength_range(&wavelength_range)?;
                 let coefficients = parse_coefficients(&coefficients)?;
-                Ok(Data::Formula3 {
+                Ok(DispersionData::Formula3 {
                     wavelength_range,
-                    coefficients,
+                    c: coefficients,
                 })
             }
             UnparsedData::Formula4 {
@@ -218,9 +267,9 @@ impl TryFrom<UnparsedData> for Data {
             } => {
                 let wavelength_range = parse_wavelength_range(&wavelength_range)?;
                 let coefficients = parse_coefficients(&coefficients)?;
-                Ok(Data::Formula4 {
+                Ok(DispersionData::Formula4 {
                     wavelength_range,
-                    coefficients,
+                    c: coefficients,
                 })
             }
             UnparsedData::Formula5 {
@@ -229,9 +278,9 @@ impl TryFrom<UnparsedData> for Data {
             } => {
                 let wavelength_range = parse_wavelength_range(&wavelength_range)?;
                 let coefficients = parse_coefficients(&coefficients)?;
-                Ok(Data::Formula5 {
+                Ok(DispersionData::Formula5 {
                     wavelength_range,
-                    coefficients,
+                    c: coefficients,
                 })
             }
             UnparsedData::Formula6 {
@@ -240,9 +289,9 @@ impl TryFrom<UnparsedData> for Data {
             } => {
                 let wavelength_range = parse_wavelength_range(&wavelength_range)?;
                 let coefficients = parse_coefficients(&coefficients)?;
-                Ok(Data::Formula6 {
+                Ok(DispersionData::Formula6 {
                     wavelength_range,
-                    coefficients,
+                    c: coefficients,
                 })
             }
             UnparsedData::Formula7 {
@@ -251,9 +300,9 @@ impl TryFrom<UnparsedData> for Data {
             } => {
                 let wavelength_range = parse_wavelength_range(&wavelength_range)?;
                 let coefficients = parse_coefficients(&coefficients)?;
-                Ok(Data::Formula7 {
+                Ok(DispersionData::Formula7 {
                     wavelength_range,
-                    coefficients,
+                    c: coefficients,
                 })
             }
             UnparsedData::Formula8 {
@@ -262,9 +311,9 @@ impl TryFrom<UnparsedData> for Data {
             } => {
                 let wavelength_range = parse_wavelength_range(&wavelength_range)?;
                 let coefficients = parse_coefficients(&coefficients)?;
-                Ok(Data::Formula8 {
+                Ok(DispersionData::Formula8 {
                     wavelength_range,
-                    coefficients,
+                    c: coefficients,
                 })
             }
             UnparsedData::Formula9 {
@@ -273,9 +322,9 @@ impl TryFrom<UnparsedData> for Data {
             } => {
                 let wavelength_range = parse_wavelength_range(&wavelength_range)?;
                 let coefficients = parse_coefficients(&coefficients)?;
-                Ok(Data::Formula9 {
+                Ok(DispersionData::Formula9 {
                     wavelength_range,
-                    coefficients,
+                    c: coefficients,
                 })
             }
         }

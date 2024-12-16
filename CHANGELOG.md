@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added a `from_reader` method to `Store` to allow reading a bitcode-encoded file from disk into a `Store` instance.
+- Added `get` and `keys` methods to the `Store` for accessing its data.
+
+### Changed
+
+- Exposed the `DispersionData` and `Item` structs that represent the data and entries inside a `Store`.
+
 ## [0.1.0] 2024-12-16
 
 ### Added
