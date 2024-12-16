@@ -2,9 +2,8 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 
 use anyhow::Result;
-use clap::Parser;
+use clap::{Parser, Subcommand, ValueEnum};
 
-use lib_ria::cli::{Args, Catalog as CatalogChoice, Commands, Format};
 use lib_ria::database::Catalog;
 use lib_ria::Store;
 
@@ -26,7 +25,12 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn store(format: &Format, path: &PathBuf, catalog_choice: CatalogChoice, output: &PathBuf) -> Result<()> {
+fn store(
+    format: &Format,
+    path: &PathBuf,
+    catalog_choice: CatalogChoice,
+    output: &PathBuf,
+) -> Result<()> {
     // Save the current directory
     let current_dir = std::env::current_dir()?;
 
@@ -81,9 +85,7 @@ fn validate(format: &Format, input: &PathBuf) -> Result<()> {
 
     // Deserialize the store file
     let _store: Store = match format {
-        Format::Json => {
-            serde_json::from_reader(reader)?
-        }
+        Format::Json => serde_json::from_reader(reader)?,
         Format::Bitcode => {
             let data = reader.bytes().collect::<Result<Vec<u8>, _>>()?;
             bitcode::deserialize(&data)?
@@ -91,4 +93,52 @@ fn validate(format: &Format, input: &PathBuf) -> Result<()> {
     };
 
     Ok(())
+}
+
+#[derive(Parser, Debug)]
+#[clap(version, author)]
+pub struct Args {
+    /// The format of the file containing the serialized store
+    #[arg(short, long, value_name = "FORMAT", default_value = "json")]
+    pub format: Format,
+
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(ValueEnum, Debug, Clone)]
+pub enum Format {
+    Json,
+    Bitcode,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Commands {
+    /// Creates a single file store of the refractiveindex.info database
+    Store {
+        /// The path to the refractiveindex.info database folders
+        #[arg(short, long, value_name = "PATH", default_value = "./database")]
+        path: std::path::PathBuf,
+
+        /// The catalog to parse
+        #[arg(short, long, value_name = "TYPE", default_value = "nk")]
+        catalog: CatalogChoice,
+
+        /// The file to write the parsed results to
+        #[arg(short, long, value_name = "FILE", default_value = "./results.dat")]
+        output: std::path::PathBuf,
+    },
+
+    /// Validates a JSON dump of the refractiveindex.info database
+    Validate {
+        /// The path to the JSON dump of the refractiveindex.info database
+        #[arg(short, long, value_name = "FILE", default_value = "./results.dat")]
+        input: std::path::PathBuf,
+    },
+}
+
+#[derive(ValueEnum, Debug, Clone)]
+pub enum CatalogChoice {
+    N2,
+    NK,
 }

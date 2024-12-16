@@ -11,6 +11,7 @@ use super::parsers::{
 };
 use super::readers::read_material;
 
+/// A flat, key-value store for material refractive index data.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Store {
     inner: HashMap<String, Item>,
@@ -86,6 +87,8 @@ impl Store {
 impl TryFrom<Catalog> for Store {
     type Error = anyhow::Error;
 
+    /// Converts a RefractiveIndex.INFO catalog into a flat, key-value store of
+    /// materials data.
     fn try_from(catalog: Catalog) -> Result<Self, Self::Error> {
         let mut store = Store::new();
 

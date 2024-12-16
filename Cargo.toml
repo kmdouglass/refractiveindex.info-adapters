@@ -1,9 +1,12 @@
 [package]
 name = "ria"
+description = "An adapter for converting the RefractiveIndex.INFO database into a flat, key-value store."
 version = "0.1.0"
 edition = "2021"
 authors = ["Kyle M. Douglass <kyle.m.douglass@gmail.com>"]
 repository = "https://github.com/kmdouglass/refractiveindex.info-adapters"
+readme = "README.md"
+license-file = "LICENSE"
 
 [lib]
 name = "lib_ria"
