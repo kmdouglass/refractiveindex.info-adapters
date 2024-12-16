@@ -32,7 +32,7 @@ git submodule update
 ```console
 cd refractiveindex.info-database
 git fetch
-git merge origin/main
+git merge origin/master
 ```
 
 ### Test and format
