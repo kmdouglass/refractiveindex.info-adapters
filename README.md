@@ -1,7 +1,7 @@
 # RIA: refractiveindex.info-adapters
 
-![docs.rs](https://img.shields.io/docsrs/ria)
-![Crates.io Version](https://img.shields.io/crates/v/ria)
+[![docs.rs](https://img.shields.io/docsrs/ria)](https://docs.rs/ria/0.1.0/lib_ria/)
+[![Crates.io Version](https://img.shields.io/crates/v/ria)](https://crates.io/crates/ria)
 
 Adapters to transform the refractiveindex.info database into single-file key/value stores.
 
