@@ -7,6 +7,7 @@ authors = ["Kyle M. Douglass <kyle.m.douglass@gmail.com>"]
 repository = "https://github.com/kmdouglass/refractiveindex.info-adapters"
 readme = "README.md"
 license-file = "LICENSE"
+exclude = [ "refractiveindex.info-database/" ]
 
 [lib]
 name = "lib_ria"
@@ -17,10 +18,10 @@ name = "ria"
 src = "src/main.rs"
 
 [dependencies]
-anyhow = "*"
-bitcode = { version = "*", features = ["serde"] }
+anyhow = "1.0"
+bitcode = { version = "0.6", features = ["serde"] }
 clap = { version = "4.5.3", features = ["derive"] }
 heck = { version = "0.5.0-rc.1" }
-serde = { version = "*", features = ["derive"] }
-serde_json = "*"
-serde_yaml = "*"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"

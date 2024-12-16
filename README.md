@@ -1,6 +1,52 @@
-# refractiveindex.info-adapters
+# RIA: refractiveindex.info-adapters
 
-Adapters to transform the refractiveindex.info database into key-value stores
+![docs.rs](https://img.shields.io/docsrs/ria)
+![Crates.io Version](https://img.shields.io/crates/v/ria)
+
+Adapters to transform the refractiveindex.info database into single-file key/value stores.
+
+`ria` provides two tools:
+
+1. a command line tool to parse the [refractiveindex.info database](https://github.com/polyanskiy/refractiveindex.info-database) into a flat key/value store and write it to file, and
+2. a Rust library containing the flattened `Store` datatype and methods for extracting the data.
+
+## Quick start
+
+### Install with Cargo
+
+```console
+cargo install ria
+```
+
+### Create a single-file JSON store of the RefractiveIndex.info database
+
+This assumes that you are currently inside the root folder of the refractiveindex.info-database repository. It will write a file called `results.dat` containing the data in JSON format.
+
+```console
+ria store
+```
+
+### Create a single-file bitcode store of the RefractiveIndex.info database
+
+The database is in `refractiveindex.info-database/`.
+
+```console
+ria -f bitcode store -p refractiveindex.info-database/
+```
+
+### Validate a store
+
+The file `results.dat` contains JSON data.
+
+```console
+ria -f json validate -i results.dat
+```
+
+### Get help
+
+```console
+ria --help
+```
 
 ## Development
 
@@ -40,26 +86,4 @@ git merge origin/master
 ```console
 cargo test
 cargo fmt
-```
-
-## Run with Cargo
-
-### Create a single-file JSON store of the RefractiveIndex.info database
-
-```console
-cargo run -- store
-```
-
-### Create a single-file bitcode store of the RefractiveIndex.info database
-
-- The database is in `refractiveindex.info-database/database/`
-
-```console
-cargo run -- -f bitcode store -p refractiveindex.info-database/database/
-```
-
-### Get help
-
-```console
-cargo run -- --help
 ```
