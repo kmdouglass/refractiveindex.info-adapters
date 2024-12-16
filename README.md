@@ -44,10 +44,10 @@ cargo fmt
 
 ## Run with Cargo
 
-### Run with defaults
+### Create a single-file store of the RefractiveIndex.info database
 
 ```console
-cargo run
+cargo run -- store
 ```
 
 ### Get help
