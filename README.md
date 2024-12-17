@@ -36,10 +36,10 @@ ria store
 
 ### Create a single-file bitcode store of the RefractiveIndex.info database
 
-The database is in `refractiveindex.info-database/`.
+The database is in `refractiveindex.info-database/database`.
 
 ```console
-ria -f bitcode store -p refractiveindex.info-database/
+ria -f bitcode store -p refractiveindex.info-database/database
 ```
 
 ### Validate a store
