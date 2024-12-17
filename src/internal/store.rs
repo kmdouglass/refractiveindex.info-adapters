@@ -4,13 +4,12 @@ use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 
 use crate::database::Data as UnparsedData;
-use crate::database::{BookContent, Catalog, ShelfContent};
+use crate::database::{read_material, BookContent, Catalog, ShelfContent};
 
 use super::parsers::{
     parse_coefficients, parse_material, parse_tabulated_2d, parse_tabulated_3d,
     parse_wavelength_range,
 };
-use super::readers::read_material;
 
 /// A flat, key-value store for material refractive index data.
 #[derive(Serialize, Deserialize, Debug)]
@@ -109,19 +108,6 @@ impl Store {
         Store {
             inner: HashMap::new(),
         }
-    }
-
-    /// Reads a store from a reader.
-    ///
-    /// # Arguments
-    /// - `reader`: The reader to read the store from.
-    ///
-    /// # Returns
-    /// The materials data store read from the reader.
-    pub fn from_reader(reader: impl std::io::Read) -> Result<Self, anyhow::Error> {
-        let data = reader.bytes().collect::<Result<Vec<u8>, _>>()?;
-        let store: Self = bitcode::deserialize(&data)?;
-        Ok(store)
     }
 
     /// Returns the item from the store associated with the given key.

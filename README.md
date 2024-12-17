@@ -14,8 +14,16 @@ Adapters to transform the refractiveindex.info database into single-file key/val
 
 ### Install with Cargo
 
+The CLI tool is an optional feature that can be installed from crates.io as
+
 ```console
-cargo install ria
+cargo install ria --features cli
+```
+
+To install from this source code repository:
+
+```console
+cargo install --path . --features cli
 ```
 
 ### Create a single-file JSON store of the RefractiveIndex.info database
@@ -84,6 +92,6 @@ git merge origin/master
 ### Test and format
 
 ```console
-cargo test
+cargo test --all-features
 cargo fmt
 ```
