@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added a `from_reader` method to `Store` to allow reading a bitcode-encoded file from disk into a `Store` instance.
 - Added `get` and `keys` methods to the `Store` for accessing its data.
+- An `interpolate` method to `DispersionData` to evaluate the dispersion curves at a given wavelength.
+- `n` and `k` methods to `Item` to evaluate the database entry's complex refractive indexes at a given wavelength.
 
 ### Changed
 

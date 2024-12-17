@@ -71,7 +71,7 @@ fn store(
         Format::Json => serde_json::to_writer(writer, &store)?,
         Format::Bitcode => {
             let data = bitcode::serialize(&store)?;
-            writer.write(&data)?;
+            writer.write_all(&data)?;
         }
     }
 

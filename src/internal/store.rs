@@ -29,6 +29,13 @@ pub struct Item {
     pub data: Vec<DispersionData>,
 }
 
+#[derive(Debug)]
+enum DataType {
+    Real,
+    Imaginary,
+    Both,
+}
+
 /// The refractive index data associated with a material.
 #[derive(Serialize, Deserialize, Debug)]
 pub enum DispersionData {
@@ -212,19 +219,79 @@ impl TryFrom<Catalog> for Store {
     }
 }
 
+impl Item {
+    /// Computes the real part of the refractive index of the material at the
+    /// given wavelength.
+    ///
+    /// # Arguments
+    /// - `wavelength`: The wavelength at which to evaluate the refractive
+    ///   index.
+    ///
+    /// # Returns
+    /// The real part of the refractive index of the material at the given
+    /// wavelength.
+    ///
+    /// # Errors
+    /// - If no real data is found for the item.
+    /// - If the wavelength is outside the range of the real data.
+    pub fn n(&self, wavelength: f64) -> Result<f64> {
+        let data = self
+            .data
+            .iter()
+            .find(|d| matches!(d.data_type(), DataType::Real | DataType::Both));
+        let (n, _) = match data {
+            Some(data) => data.interpolate(wavelength)?,
+            None => return Err(anyhow!("No real data found for item.")),
+        };
+        Ok(n)
+    }
+
+    /// Computes the imaginary part of the refractive index of the material at
+    /// the given wavelength.
+    ///
+    /// # Arguments
+    /// - `wavelength`: The wavelength at which to evaluate the refractive
+    ///  index.
+    ///
+    /// # Returns
+    /// The imaginary part of the refractive index of the material at the given
+    /// wavelength.
+    ///
+    /// # Errors
+    /// - If no imaginary data is found for the item.
+    /// - If the wavelength is outside the range of the imaginary data.
+    pub fn k(&self, wavelength: f64) -> Result<f64> {
+        let data = self
+            .data
+            .iter()
+            .find(|d| matches!(d.data_type(), DataType::Imaginary | DataType::Both));
+        let (_, k) = match data {
+            Some(data) => data.interpolate(wavelength)?,
+            None => return Err(anyhow!("No imaginary data found for item.")),
+        };
+
+        match k {
+            Some(k) => Ok(k),
+            None => Err(anyhow!("No imaginary data found for item.")),
+        }
+    }
+}
+
 impl DispersionData {
     /// Computes the value of the dispersion curve at the given wavelength.
-    /// 
+    ///
     /// # Arguments
-    /// - `wavelength`: The wavelength at which to evaluate the dispersion curve.
-    /// 
+    /// - `wavelength`: The wavelength at which to evaluate the dispersion
+    ///   curve.
+    ///
     /// # Returns
-    /// The value of the dispersion curve at the given wavelength.
-    /// 
+    /// The value of the dispersion curve at the given wavelength. The first
+    /// value is the real part of the refractive index, and the second value
+    /// is the imaginary part of the refractive index.
+    ///
     /// # Errors
     /// - If the wavelength is outside the range of dispersion data.
-    pub fn interpolate(&self, wavelength: f64) -> Result<f64> {
-
+    pub fn interpolate(&self, wavelength: f64) -> Result<(f64, Option<f64>)> {
         let n: f64 = match &self {
             Self::Formula1 {
                 wavelength_range,
@@ -384,13 +451,35 @@ impl DispersionData {
                     .sqrt()
             }
             _ => {
-                return Err(anyhow!(
-                    "Tabulated dispersion data are not implemented."
-                ));
+                return Err(anyhow!("Tabulated dispersion data are not implemented."));
             }
         };
 
-        Ok(n)
+        Ok((n, None))
+    }
+
+    /// Returns the type of data stored in the DispersionData.
+    ///
+    /// An item may have either one or two dispersion data sets. If there are
+    /// two, we have to infer from the type which is real and which is
+    /// imaginary.  We use the following rules to determine which is which:
+    ///
+    /// 1. If the DispersionData is TabulatedN, then it's the real part.
+    /// 2. If the DispersionData is TabulatedK, then it's the imaginary part.
+    /// 3. If the DispersionData is a formula, then it's the real part.
+    ///
+    /// If there is only one dispersion data set, then we use one additional
+    /// rule:
+    ///
+    /// 1. If the DispersionData is TabulatedNK, then it's both the real and
+    ///    imaginary parts.
+    fn data_type(&self) -> DataType {
+        match self {
+            self::DispersionData::TabulatedK { data: _ } => DataType::Imaginary,
+            self::DispersionData::TabulatedN { data: _ } => DataType::Real,
+            self::DispersionData::TabulatedNK { data: _ } => DataType::Both,
+            _ => DataType::Real,
+        }
     }
 }
 
@@ -523,119 +612,128 @@ mod test {
     fn test_interpolate_formula_1() {
         // Water Ice at 150 K from refractiveindex.info
         let data = DispersionData::Formula1 {
-                wavelength_range: [0.210, 0.757],
-                c: vec![0.0, 0.496, 0.071, 0.190, 0.134],
-            };
-        let n = data.interpolate(0.5876).unwrap();
+            wavelength_range: [0.210, 0.757],
+            c: vec![0.0, 0.496, 0.071, 0.190, 0.134],
+        };
+        let (n, k) = data.interpolate(0.5876).unwrap();
         assert_abs_diff_eq!(n, 1.3053, epsilon = 1e-4);
+        assert!(k.is_none());
     }
 
     #[test]
     fn test_interpolate_formula_2() {
         // N-BK7 from refractiveindex.info
         let data = DispersionData::Formula2 {
-                wavelength_range: [0.3, 2.5],
-                c: vec![
-                    0.0,
-                    1.03961212,
-                    0.00600069867,
-                    0.231792344,
-                    0.0200179144,
-                    1.01046945,
-                    103.560653,
-                ],
-            };
+            wavelength_range: [0.3, 2.5],
+            c: vec![
+                0.0,
+                1.03961212,
+                0.00600069867,
+                0.231792344,
+                0.0200179144,
+                1.01046945,
+                103.560653,
+            ],
+        };
 
-        let n = data.interpolate(0.5876).unwrap();
+        let (n, k) = data.interpolate(0.5876).unwrap();
         assert_abs_diff_eq!(n, 1.51680, epsilon = 1e-5);
+        assert!(k.is_none());
     }
 
     #[test]
     fn test_interpolate_formula_3() {
         // Ohara BAH10 from refractiveindex.info
-        let data =DispersionData::Formula3 {
-                wavelength_range: [0.365, 0.9],
-                c: vec![
-                    2.730459,
-                    -0.01063385,
-                    2.0,
-                    0.01942756,
-                    -2.0,
-                    0.0008209873,
-                    -4.0,
-                    -5.210457e-05,
-                    -6.0,
-                    4.447534e-06,
-                    -8.0,
-                ],
-            };
-        let n = data.interpolate(0.5876).unwrap();
+        let data = DispersionData::Formula3 {
+            wavelength_range: [0.365, 0.9],
+            c: vec![
+                2.730459,
+                -0.01063385,
+                2.0,
+                0.01942756,
+                -2.0,
+                0.0008209873,
+                -4.0,
+                -5.210457e-05,
+                -6.0,
+                4.447534e-06,
+                -8.0,
+            ],
+        };
+        let (n, k) = data.interpolate(0.5876).unwrap();
         assert_abs_diff_eq!(n, 1.6700, epsilon = 1e-4);
+        assert!(k.is_none());
     }
 
     #[test]
     fn test_interpolate_formula_4() {
         // CH4N20 Urea from refractiveindex.info
         let data = DispersionData::Formula4 {
-                wavelength_range: [0.3, 1.06],
-                c: vec![2.1823, 0.0125, 0.0, 0.0300, 1.0, 0.0, 0.0, 0.0, 1.0],
-            };
-        let n = data.interpolate(0.5876).unwrap();
+            wavelength_range: [0.3, 1.06],
+            c: vec![2.1823, 0.0125, 0.0, 0.0300, 1.0, 0.0, 0.0, 0.0, 1.0],
+        };
+        let (n, k) = data.interpolate(0.5876).unwrap();
         assert_abs_diff_eq!(n, 1.4906, epsilon = 1e-4);
+        assert!(k.is_none());
     }
 
     #[test]
     fn test_interpolate_formula_5() {
         // BK7 matching liquid from refractiveindex.info
-        let data =DispersionData::Formula5 {
-                wavelength_range: [0.31, 1.55],
-                c: vec![1.502787, 455872.4E-8, -2.0, 9.844856E-5, -4.0],
-            };
-        let n = data.interpolate(0.5876).unwrap();
+        let data = DispersionData::Formula5 {
+            wavelength_range: [0.31, 1.55],
+            c: vec![1.502787, 455872.4E-8, -2.0, 9.844856E-5, -4.0],
+        };
+        let (n, k) = data.interpolate(0.5876).unwrap();
         assert_abs_diff_eq!(n, 1.5168, epsilon = 1e-4);
+        assert!(k.is_none());
     }
 
     #[test]
     fn test_interpolate_formula_6() {
         // H2 (Peck) in main shelf from refractiveindex.info
         let data = DispersionData::Formula6 {
-                wavelength_range: [0.168, 1.6945],
-                c: vec![0.0, 0.0148956, 180.7, 0.0049037, 92.0],
-            };
-        let n = data.interpolate(0.5876).unwrap();
+            wavelength_range: [0.168, 1.6945],
+            c: vec![0.0, 0.0148956, 180.7, 0.0049037, 92.0],
+        };
+        let (n, k) = data.interpolate(0.5876).unwrap();
         assert_abs_diff_eq!(n, 1.00013881, epsilon = 1e-8);
+        assert!(k.is_none());
     }
 
     #[test]
     fn test_interpolate_formula_7() {
         // Si (Edwards) in main shelf of refractiveindex.info
         let data = DispersionData::Formula7 {
-                wavelength_range: [2.4373, 25.0],
-                c: vec![3.41983, 0.159906, -0.123109, 1.26878E-6, -1.95104E-9],
-            };
-        let n = data.interpolate(2.4373).unwrap();
+            wavelength_range: [2.4373, 25.0],
+            c: vec![3.41983, 0.159906, -0.123109, 1.26878E-6, -1.95104E-9],
+        };
+        let (n, k) = data.interpolate(2.4373).unwrap();
         assert_abs_diff_eq!(n, 3.4434, epsilon = 1e-4);
+        assert!(k.is_none());
     }
 
     #[test]
     fn test_interpolate_formula_8() {
         // TlCl (Schroter) in main shelf of refractiveindex.info
         let data = DispersionData::Formula8 {
-                wavelength_range: [0.43, 0.66],
-                c: vec![0.47856, 0.07858, 0.08277, -0.00881],
-            };
-        let n = data.interpolate(0.5876).unwrap();
+            wavelength_range: [0.43, 0.66],
+            c: vec![0.47856, 0.07858, 0.08277, -0.00881],
+        };
+        let (n, k) = data.interpolate(0.5876).unwrap();
         assert_abs_diff_eq!(n, 2.2636, epsilon = 1e-4);
+        assert!(k.is_none());
     }
 
     #[test]
     fn test_interpolate_formula_9() {
         // CH4N2O Urea (Rosker-e) from refractiveindex.info
         let data = DispersionData::Formula9 {
-                wavelength_range: [0.3, 1.06],
-                c: vec![2.51527, 0.0240, 0.0300, 0.020, 1.52, 0.8771],
-            };
-        let n = data.interpolate(0.5876).unwrap();
+            wavelength_range: [0.3, 1.06],
+            c: vec![2.51527, 0.0240, 0.0300, 0.020, 1.52, 0.8771],
+        };
+        let (n, k) = data.interpolate(0.5876).unwrap();
         assert_abs_diff_eq!(n, 1.6065, epsilon = 1e-4);
+        assert!(k.is_none());
     }
 }
