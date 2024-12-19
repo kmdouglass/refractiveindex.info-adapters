@@ -96,10 +96,8 @@ pub enum DispersionData {
 }
 
 impl Store {
-    pub fn new() -> Self {
-        Store {
-            inner: HashMap::new(),
-        }
+    pub fn new(database: HashMap<String, Material>) -> Self {
+        Store { inner: database }
     }
 
     /// Returns the item from the store associated with the given key.
@@ -114,7 +112,7 @@ impl Store {
     }
 
     /// Inserts a new item into the store.
-    /// 
+    ///
     /// # Arguments
     /// - `key`: The key to associate with the item.
     /// - `material`: The item to insert into the store.
@@ -128,8 +126,15 @@ impl Store {
     }
 
     /// Removes the item associated with the given key from the store.
-    pub fn remove(&mut self, key: &str) -> Option<Material>{
+    pub fn remove(&mut self, key: &str) -> Option<Material> {
         self.inner.remove(key)
+    }
+}
+
+impl Default for Store {
+    fn default() -> Self {
+        let database = HashMap::new();
+        Self::new(database)
     }
 }
 
@@ -172,21 +177,15 @@ impl Material {
     /// wavelength.
     ///
     /// # Errors
-    /// - If no imaginary data is found for the item.
     /// - If the wavelength is outside the range of the imaginary data.
-    pub fn k(&self, wavelength: f64) -> Result<f64> {
+    pub fn k(&self, wavelength: f64) -> Result<Option<f64>> {
         let data = self
             .data
             .iter()
             .find(|d| matches!(d.data_type(), DataType::Imaginary | DataType::Both));
-        let (_, k) = match data {
-            Some(data) => data.interpolate(wavelength)?,
-            None => return Err(anyhow!("No imaginary data found for item.")),
-        };
-
-        match k {
-            Some(k) => Ok(k),
-            None => Err(anyhow!("No imaginary data found for item.")),
+        match data {
+            Some(data) => Ok(data.interpolate(wavelength)?.1),
+            None => Ok(None),
         }
     }
 }

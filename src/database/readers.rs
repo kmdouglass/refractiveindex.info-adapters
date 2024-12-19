@@ -1,8 +1,8 @@
 //! Reads the input database files from disk.
 use anyhow::Error;
 
-use crate::database::{BookContent, Catalog, RIInfoMaterial, ShelfContent};
 use crate::database::parsers::parse_material;
+use crate::database::{BookContent, Catalog, RIInfoMaterial, ShelfContent};
 use crate::internal::store::Store;
 
 #[cfg(feature = "cli")]
@@ -18,7 +18,7 @@ impl TryFrom<Catalog> for Store {
     /// Converts a RefractiveIndex.INFO catalog into a flat, key-value store of
     /// materials data.
     fn try_from(catalog: Catalog) -> Result<Self, Self::Error> {
-        let mut store = Store::new();
+        let mut store = Store::default();
 
         for shelf in catalog {
             let shelf_key = &shelf.shelf;

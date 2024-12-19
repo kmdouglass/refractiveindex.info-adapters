@@ -79,7 +79,8 @@ pub struct RIInfoMaterial {
     #[serde(rename = "DATA")]
     pub data: Vec<Data>,
 
-    /// Do not serialize/deserialize SPECS for now because it is largely unstructured.
+    /// Do not serialize/deserialize SPECS for now because it is largely
+    /// unstructured.
     #[serde(rename = "SPECS", skip)]
     pub specs: String,
 }
@@ -128,7 +129,8 @@ mod test {
     #[test]
     #[cfg(feature = "cli")]
     fn test_deserialize_material() {
-        let material: crate::database::material::RIInfoMaterial = serde_yaml::from_str(yaml()).unwrap();
+        let material: crate::database::material::RIInfoMaterial =
+            serde_yaml::from_str(yaml()).unwrap();
         assert_eq!(material.specs, "");
     }
 }
