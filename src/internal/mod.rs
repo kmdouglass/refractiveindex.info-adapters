@@ -2,5 +2,4 @@
 ///
 /// Note that this does not exactly match the schema used by
 /// refractiveindex.info. Instead, it uses a flat, key/value store.
-mod parsers;
 pub(crate) mod store;

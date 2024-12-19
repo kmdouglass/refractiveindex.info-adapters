@@ -1,14 +1,14 @@
 # RIA: refractiveindex.info-adapters
 
-[![docs.rs](https://img.shields.io/docsrs/ria)](https://docs.rs/ria/0.1.0/lib_ria/)
+[![docs.rs](https://img.shields.io/docsrs/ria)](https://docs.rs/ria/latest/lib_ria/)
 [![Crates.io Version](https://img.shields.io/crates/v/ria)](https://crates.io/crates/ria)
 
 Adapters to transform the refractiveindex.info database into single-file key/value stores.
 
 `ria` provides two tools:
 
-1. a command line tool to parse the [refractiveindex.info database](https://github.com/polyanskiy/refractiveindex.info-database) into a flat key/value store and write it to file, and
-2. a Rust library containing the flattened `Store` datatype and methods for extracting the data.
+1. a Rust library containing the flattened `Store` datatype and methods for extracting the data, and
+2. a command line tool to parse the [refractiveindex.info database](https://github.com/polyanskiy/refractiveindex.info-database) into a flat key/value store and write it to file.
 
 ## Quick start
 

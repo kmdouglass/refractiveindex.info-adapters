@@ -3,23 +3,15 @@ use std::collections::HashMap;
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 
-use crate::database::Data as UnparsedData;
-use crate::database::{read_material, BookContent, Catalog, ShelfContent};
-
-use super::parsers::{
-    parse_coefficients, parse_material, parse_tabulated_2d, parse_tabulated_3d,
-    parse_wavelength_range,
-};
-
 /// A flat, key-value store for material refractive index data.
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Store {
-    inner: HashMap<String, Item>,
+    inner: HashMap<String, Material>,
 }
 
 /// A single item in the store containing materials data.
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Item {
+pub struct Material {
     pub shelf: String,
     pub book: String,
     pub page: String,
@@ -104,7 +96,7 @@ pub enum DispersionData {
 }
 
 impl Store {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Store {
             inner: HashMap::new(),
         }
@@ -117,95 +109,31 @@ impl Store {
     ///
     /// # Returns
     /// The item associated with the given key, if it exists.
-    pub fn get(&self, key: &str) -> Option<&Item> {
+    pub fn get(&self, key: &str) -> Option<&Material> {
         self.inner.get(key)
+    }
+
+    /// Inserts a new item into the store.
+    /// 
+    /// # Arguments
+    /// - `key`: The key to associate with the item.
+    /// - `material`: The item to insert into the store.
+    pub fn insert(&mut self, key: String, material: Material) {
+        self.inner.insert(key, material);
     }
 
     /// Returns an iterator over the keys in the store.
     pub fn keys(&self) -> impl Iterator<Item = &String> {
         self.inner.keys()
     }
-}
 
-impl TryFrom<Catalog> for Store {
-    type Error = anyhow::Error;
-
-    /// Converts a RefractiveIndex.INFO catalog into a flat, key-value store of
-    /// materials data.
-    fn try_from(catalog: Catalog) -> Result<Self, Self::Error> {
-        let mut store = Store::new();
-
-        for shelf in catalog {
-            let shelf_key = &shelf.shelf;
-            let shelf_name = &shelf.name;
-
-            for shelf_content in shelf.content {
-                match shelf_content {
-                    ShelfContent::Divider { divider: _ } => {
-                        // store divider
-                    }
-                    ShelfContent::Book {
-                        book,
-                        name,
-                        info: _,
-                        content,
-                    } => {
-                        let book_key = &book;
-                        let book_name = &name;
-
-                        for book_content in content {
-                            let (page, name, data, _info) = match book_content {
-                                BookContent::Divider { divider: _ } => {
-                                    // Skip the divider for now
-                                    continue;
-                                }
-                                BookContent::Page {
-                                    page,
-                                    name,
-                                    data,
-                                    info,
-                                } => (page, name, data, info),
-                                BookContent::PageNumberName {
-                                    page,
-                                    name,
-                                    data,
-                                    info,
-                                } => (page.to_string(), name, data, info),
-                            };
-
-                            let page_key = &page;
-                            let page_name = &name;
-
-                            // Try to read the material data; if it fails, skip this page
-                            let material = match read_material(data) {
-                                Ok(material) => material,
-                                Err(_) => {
-                                    continue;
-                                }
-                            };
-
-                            // Parse the material data
-                            let item =
-                                match parse_material(material, shelf_name, book_name, page_name) {
-                                    Ok(item) => item,
-                                    Err(_) => {
-                                        continue;
-                                    }
-                                };
-
-                            let key = format!("{}:{}:{}", shelf_key, book_key, page_key);
-                            store.inner.insert(key, item);
-                        }
-                    }
-                }
-            }
-        }
-
-        Ok(store)
+    /// Removes the item associated with the given key from the store.
+    pub fn remove(&mut self, key: &str) -> Option<Material>{
+        self.inner.remove(key)
     }
 }
 
-impl Item {
+impl Material {
     /// Computes the real part of the refractive index of the material at the
     /// given wavelength.
     ///
@@ -465,126 +393,6 @@ impl DispersionData {
             self::DispersionData::TabulatedN { data: _ } => DataType::Real,
             self::DispersionData::TabulatedNK { data: _ } => DataType::Both,
             _ => DataType::Real,
-        }
-    }
-}
-
-impl TryFrom<UnparsedData> for DispersionData {
-    type Error = anyhow::Error;
-
-    fn try_from(data: UnparsedData) -> Result<Self, Self::Error> {
-        match data {
-            UnparsedData::TabulatedK { data } => {
-                let data = parse_tabulated_2d(&data)?;
-                Ok(DispersionData::TabulatedK { data })
-            }
-            UnparsedData::TabulatedN { data } => {
-                let data = parse_tabulated_2d(&data)?;
-                Ok(DispersionData::TabulatedN { data })
-            }
-            UnparsedData::TabulatedNK { data } => {
-                let data = parse_tabulated_3d(&data)?;
-                Ok(DispersionData::TabulatedNK { data })
-            }
-            UnparsedData::Formula1 {
-                wavelength_range,
-                coefficients,
-            } => {
-                let wavelength_range = parse_wavelength_range(&wavelength_range)?;
-                let coefficients = parse_coefficients(&coefficients)?;
-                Ok(DispersionData::Formula1 {
-                    wavelength_range,
-                    c: coefficients,
-                })
-            }
-            UnparsedData::Formula2 {
-                wavelength_range,
-                coefficients,
-            } => {
-                let wavelength_range = parse_wavelength_range(&wavelength_range)?;
-                let coefficients = parse_coefficients(&coefficients)?;
-                Ok(DispersionData::Formula2 {
-                    wavelength_range,
-                    c: coefficients,
-                })
-            }
-            UnparsedData::Formula3 {
-                wavelength_range,
-                coefficients,
-            } => {
-                let wavelength_range = parse_wavelength_range(&wavelength_range)?;
-                let coefficients = parse_coefficients(&coefficients)?;
-                Ok(DispersionData::Formula3 {
-                    wavelength_range,
-                    c: coefficients,
-                })
-            }
-            UnparsedData::Formula4 {
-                wavelength_range,
-                coefficients,
-            } => {
-                let wavelength_range = parse_wavelength_range(&wavelength_range)?;
-                let coefficients = parse_coefficients(&coefficients)?;
-                Ok(DispersionData::Formula4 {
-                    wavelength_range,
-                    c: coefficients,
-                })
-            }
-            UnparsedData::Formula5 {
-                wavelength_range,
-                coefficients,
-            } => {
-                let wavelength_range = parse_wavelength_range(&wavelength_range)?;
-                let coefficients = parse_coefficients(&coefficients)?;
-                Ok(DispersionData::Formula5 {
-                    wavelength_range,
-                    c: coefficients,
-                })
-            }
-            UnparsedData::Formula6 {
-                wavelength_range,
-                coefficients,
-            } => {
-                let wavelength_range = parse_wavelength_range(&wavelength_range)?;
-                let coefficients = parse_coefficients(&coefficients)?;
-                Ok(DispersionData::Formula6 {
-                    wavelength_range,
-                    c: coefficients,
-                })
-            }
-            UnparsedData::Formula7 {
-                wavelength_range,
-                coefficients,
-            } => {
-                let wavelength_range = parse_wavelength_range(&wavelength_range)?;
-                let coefficients = parse_coefficients(&coefficients)?;
-                Ok(DispersionData::Formula7 {
-                    wavelength_range,
-                    c: coefficients,
-                })
-            }
-            UnparsedData::Formula8 {
-                wavelength_range,
-                coefficients,
-            } => {
-                let wavelength_range = parse_wavelength_range(&wavelength_range)?;
-                let coefficients = parse_coefficients(&coefficients)?;
-                Ok(DispersionData::Formula8 {
-                    wavelength_range,
-                    c: coefficients,
-                })
-            }
-            UnparsedData::Formula9 {
-                wavelength_range,
-                coefficients,
-            } => {
-                let wavelength_range = parse_wavelength_range(&wavelength_range)?;
-                let coefficients = parse_coefficients(&coefficients)?;
-                Ok(DispersionData::Formula9 {
-                    wavelength_range,
-                    c: coefficients,
-                })
-            }
         }
     }
 }

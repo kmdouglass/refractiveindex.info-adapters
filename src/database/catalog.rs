@@ -59,8 +59,6 @@ pub struct Shelf {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     fn yaml() -> &'static str {
         "
         - SHELF: main
@@ -82,7 +80,8 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "cli")]
     fn test_deserialize_catalog() {
-        let _: Catalog = serde_yaml::from_str(yaml()).unwrap();
+        let _: crate::database::Catalog = serde_yaml::from_str(yaml()).unwrap();
     }
 }

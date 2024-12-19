@@ -67,8 +67,9 @@ pub enum Data {
     },
 }
 
+/// Represents a material as represented in the refractiveindex.info database.
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Material {
+pub struct RIInfoMaterial {
     #[serde(rename = "REFERENCES")]
     pub references: String,
 
@@ -78,14 +79,13 @@ pub struct Material {
     #[serde(rename = "DATA")]
     pub data: Vec<Data>,
 
-    #[serde(rename = "SPECS")]
-    pub specs: Option<serde_yaml::Value>,
+    /// Do not serialize/deserialize SPECS for now because it is largely unstructured.
+    #[serde(rename = "SPECS", skip)]
+    pub specs: String,
 }
 
 #[cfg(test)]
 mod test {
-    use super::*;
-
     fn yaml() -> &'static str {
         r#"
         REFERENCES: \"<a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20b.agf\">SCHOTT Zemax catalog 2017-01-20b</a> (obtained from <a href=\"http://www.schott.com/advanced_optics/english/download/\">http://www.schott.com</a>)<br>See also <a href=\"http://refractiveindex.info/download/data/2017/schott_2017-01-20.pdf\">SCHOTT glass data sheets</a>\"
@@ -126,7 +126,9 @@ mod test {
     }
 
     #[test]
+    #[cfg(feature = "cli")]
     fn test_deserialize_material() {
-        let _: Material = serde_yaml::from_str(yaml()).unwrap();
+        let material: crate::database::material::RIInfoMaterial = serde_yaml::from_str(yaml()).unwrap();
+        assert_eq!(material.specs, "");
     }
 }
