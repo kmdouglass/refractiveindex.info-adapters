@@ -1,4 +1,4 @@
-use std::io::{Read, Write};
+use std::io::{BufRead, Read, Write};
 use std::path::PathBuf;
 
 use anyhow::Result;
@@ -15,9 +15,10 @@ fn main() -> Result<()> {
             path,
             catalog,
             output,
-            ..
+            include,
+            exclude,
         } => {
-            store(&args.format, &path, catalog, &output)?;
+            store(&args.format, &path, catalog, &output, include, exclude)?;
         }
         Commands::Validate { input } => {
             validate(&args.format, &input)?;
@@ -31,6 +32,8 @@ fn store(
     path: &PathBuf,
     catalog_choice: CatalogChoice,
     output: &PathBuf,
+    include: Option<PathBuf>,
+    exclude: Option<PathBuf>,
 ) -> Result<()> {
     // Save the current directory
     let current_dir = std::env::current_dir()?;
@@ -58,13 +61,28 @@ fn store(
             std::env::set_current_dir("data-nk")?;
         }
     }
-    let store = Store::try_from(catalog)?;
+    let mut store = Store::try_from(catalog)?;
 
-    // Write the store to the output file in JSON format
     println!("Changing directory back to {}", &current_dir.display());
     std::env::set_current_dir(current_dir)?;
     let file = std::fs::File::create(output)?;
 
+    // Filter the store if necessary. Exclude is ignored if include is provided.
+    if let Some(include) = include {
+        println!("Filtering store keys using {}", include.display());
+        let file = std::fs::File::open(include)?;
+        let reader = std::io::BufReader::new(file);
+        let keys: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
+        store.retain(|key, _| keys.contains(&key));
+    } else if let Some(exclude) = exclude {
+        println!("Filtering store keys using {}", exclude.display());
+        let file = std::fs::File::open(exclude)?;
+        let reader = std::io::BufReader::new(file);
+        let keys: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
+        store.remove_many(&keys);
+    }
+
+    // Write the store to the output file
     println!("Writing store to {}", output.display());
     let mut writer = std::io::BufWriter::new(file);
 
@@ -132,13 +150,13 @@ pub enum Commands {
         /// A file containing store keys to inculde in the output file. There
         /// should be one key per line. If this is not provided, all keys will
         /// be included.
-        #[arg(short, long, value_name = "FILE", default_value = "")]
+        #[arg(short, long, value_name = "FILE")]
         include: Option<std::path::PathBuf>,
 
         /// A file containing store keys to exclude from the output file. There
         /// should be one key per line. This will be ignored if the include file
         /// is provided.
-        #[arg(short, long, value_name = "FILE", default_value = "")]
+        #[arg(short, long, value_name = "FILE")]
         exclude: Option<std::path::PathBuf>,
     },
 
