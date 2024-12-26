@@ -15,6 +15,7 @@ fn main() -> Result<()> {
             path,
             catalog,
             output,
+            ..
         } => {
             store(&args.format, &path, catalog, &output)?;
         }
@@ -127,6 +128,18 @@ pub enum Commands {
         /// The file to write the parsed results to
         #[arg(short, long, value_name = "FILE", default_value = "./results.dat")]
         output: std::path::PathBuf,
+
+        /// A file containing store keys to inculde in the output file. There
+        /// should be one key per line. If this is not provided, all keys will
+        /// be included.
+        #[arg(short, long, value_name = "FILE", default_value = "")]
+        include: Option<std::path::PathBuf>,
+
+        /// A file containing store keys to exclude from the output file. There
+        /// should be one key per line. This will be ignored if the include file
+        /// is provided.
+        #[arg(short, long, value_name = "FILE", default_value = "")]
+        exclude: Option<std::path::PathBuf>,
     },
 
     /// Validates a JSON dump of the refractiveindex.info database
