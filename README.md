@@ -42,6 +42,14 @@ The database is in `refractiveindex.info-database/database`.
 ria -f bitcode store -p refractiveindex.info-database/database
 ```
 
+### Create a single-file JSON store and include only keys in a file
+
+The file should contain one key per line.
+
+```console
+ria store -p refractiveindex.info-database/database -i misc/cherry-initial-data.txt
+```
+
 ### Validate a store
 
 The file `results.dat` contains JSON data.
