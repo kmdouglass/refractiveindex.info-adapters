@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added `retain` and `remove_many` methods to the `Store`.
+- Added `--include` and `--exclude` options to the CLI's `store` subcommand for filtering the Store's contents.
 
 ## [0.2.0] 2024-12-19
 

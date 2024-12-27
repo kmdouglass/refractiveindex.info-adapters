@@ -126,16 +126,16 @@ impl Store {
     }
 
     /// Retains only the items in the store that satisfy the given predicate.
-    /// 
+    ///
     /// # Arguments
-    /// - `predicate`: The predicate to use to retain items in the store. Any item for which the
-    ///   predicate returns `false` will be removed.
+    /// - `predicate`: The predicate to use to retain items in the store. Any
+    ///   item for which the predicate returns `false` will be removed.
     pub fn retain(&mut self, predicate: impl FnMut(&String, &mut Material) -> bool) {
         self.inner.retain(predicate);
     }
 
     /// Removes the item associated with the given key from the store.
-    /// 
+    ///
     /// # Arguments
     /// - `key`: The key of the item to remove from the store.
     pub fn remove(&mut self, key: &str) -> Option<Material> {
@@ -143,7 +143,7 @@ impl Store {
     }
 
     /// Removes multiple items from the store.
-    /// 
+    ///
     /// # Arguments
     /// - `keys`: The keys of the items to remove from the store.
     pub fn remove_many(&mut self, keys: &[String]) {
