@@ -125,9 +125,31 @@ impl Store {
         self.inner.keys()
     }
 
+    /// Retains only the items in the store that satisfy the given predicate.
+    /// 
+    /// # Arguments
+    /// - `predicate`: The predicate to use to retain items in the store. Any item for which the
+    ///   predicate returns `false` will be removed.
+    pub fn retain(&mut self, predicate: impl FnMut(&String, &mut Material) -> bool) {
+        self.inner.retain(predicate);
+    }
+
     /// Removes the item associated with the given key from the store.
+    /// 
+    /// # Arguments
+    /// - `key`: The key of the item to remove from the store.
     pub fn remove(&mut self, key: &str) -> Option<Material> {
         self.inner.remove(key)
+    }
+
+    /// Removes multiple items from the store.
+    /// 
+    /// # Arguments
+    /// - `keys`: The keys of the items to remove from the store.
+    pub fn remove_many(&mut self, keys: &[String]) {
+        for key in keys {
+            self.inner.remove(key);
+        }
     }
 }
 
@@ -170,7 +192,7 @@ impl Material {
     ///
     /// # Arguments
     /// - `wavelength`: The wavelength at which to evaluate the refractive
-    ///  index.
+    ///   index.
     ///
     /// # Returns
     /// The imaginary part of the refractive index of the material at the given
