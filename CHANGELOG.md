@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added `retain` and `remove_many` methods to the `Store`.
 - Added `--include` and `--exclude` options to the CLI's `store` subcommand for filtering the Store's contents.
 
+### Changed
+
+- Error messages now better explain the problem when an input wavelength lies outside the range of a material's dispersion data.
+
 ## [0.2.0] 2024-12-19
 
 ### Added

@@ -235,7 +235,7 @@ impl DispersionData {
                 // Sellmeier (preferred)
                 if wavelength < wavelength_range[0] || wavelength > wavelength_range[1] {
                     return Err(anyhow!(
-                        "The wavelength is outside the range of the real spec."
+                        "The requested wavelength is outside the range of the available dispersion data."
                     ));
                 }
                 let mut sum = 0.0;
@@ -251,7 +251,7 @@ impl DispersionData {
                 // Sellmeier-2
                 if wavelength < wavelength_range[0] || wavelength > wavelength_range[1] {
                     return Err(anyhow!(
-                        "The wavelength is outside the range of the real spec."
+                        "The requested wavelength is outside the range of the available dispersion data."
                     ));
                 }
                 let mut sum = 0.0;
@@ -267,7 +267,7 @@ impl DispersionData {
                 // Polynomial
                 if wavelength < wavelength_range[0] || wavelength > wavelength_range[1] {
                     return Err(anyhow!(
-                        "The wavelength is outside the range of the real spec."
+                        "The requested wavelength is outside the range of the available dispersion data."
                     ));
                 }
 
@@ -284,7 +284,7 @@ impl DispersionData {
                 // RefractiveIndex.INFO
                 if wavelength < wavelength_range[0] || wavelength > wavelength_range[1] {
                     return Err(anyhow!(
-                        "The wavelength is outside the range of the real spec."
+                        "The requested wavelength is outside the range of the available dispersion data."
                     ));
                 }
 
@@ -307,7 +307,7 @@ impl DispersionData {
                 // Cauchy
                 if wavelength < wavelength_range[0] || wavelength > wavelength_range[1] {
                     return Err(anyhow!(
-                        "The wavelength is outside the range of the real spec."
+                        "The requested wavelength is outside the range of the available dispersion data."
                     ));
                 }
 
@@ -324,7 +324,7 @@ impl DispersionData {
                 // Gases
                 if wavelength < wavelength_range[0] || wavelength > wavelength_range[1] {
                     return Err(anyhow!(
-                        "The wavelength is outside the range of the real spec."
+                        "The requested wavelength is outside the range of the available dispersion data."
                     ));
                 }
 
@@ -341,7 +341,7 @@ impl DispersionData {
                 // Herzberger
                 if wavelength < wavelength_range[0] || wavelength > wavelength_range[1] {
                     return Err(anyhow!(
-                        "The wavelength is outside the range of the real spec."
+                        "The requested wavelength is outside the range of the available dispersion data."
                     ));
                 }
                 let mut sum = 0.0;
@@ -359,7 +359,7 @@ impl DispersionData {
                 // Retro
                 if wavelength < wavelength_range[0] || wavelength > wavelength_range[1] {
                     return Err(anyhow!(
-                        "The wavelength is outside the range of the real spec."
+                        "The requested wavelength is outside the range of the available dispersion data."
                     ));
                 }
 
@@ -376,7 +376,7 @@ impl DispersionData {
                 // Exotic
                 if wavelength < wavelength_range[0] || wavelength > wavelength_range[1] {
                     return Err(anyhow!(
-                        "The wavelength is outside the range of the real spec."
+                        "The requested wavelength is outside the range of the available dispersion data."
                     ));
                 }
 
