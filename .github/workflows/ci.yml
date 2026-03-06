@@ -16,9 +16,12 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@nightly
         with:
-          components: clippy
+          components: clippy, rustfmt
 
       - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt -- --check
 
       - name: Test
         run: cargo test --all-features
