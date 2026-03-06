@@ -28,10 +28,16 @@ cargo install --path . --features cli
 
 ### Create a single-file JSON store of the RefractiveIndex.info database
 
-This assumes that you are currently inside the root folder of the refractiveindex.info-database repository. It will write a file called `results.dat` containing the data in JSON format.
+This assumes that you are currently inside the root folder of the refractiveindex.info-database repository. It will write a file called `results.dat` containing the `nk` catalog data in JSON format.
 
 ```console
 ria store
+```
+
+### Create a single-file JSON store of the n2 catalog
+
+```console
+ria store -p refractiveindex.info-database/database -c n2
 ```
 
 ### Create a single-file bitcode store of the RefractiveIndex.info database
@@ -48,6 +54,14 @@ The file should contain one key per line.
 
 ```console
 ria store -p refractiveindex.info-database/database -i misc/cherry-initial-data.txt
+```
+
+### Create a single-file JSON store and exclude keys in a file
+
+The file should contain one key per line. The exclude list is ignored if an include file is also provided.
+
+```console
+ria store -p refractiveindex.info-database/database -e misc/excluded-keys.txt
 ```
 
 ### Validate a store
