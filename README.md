@@ -111,9 +111,10 @@ git fetch
 git merge origin/master
 ```
 
-### Test and format
+### Test, lint, and format
 
 ```console
 cargo test --all-features
+cargo clippy --all-features
 cargo fmt
 ```

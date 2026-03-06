@@ -21,5 +21,8 @@ jobs:
       - name: Test
         run: cargo test --all-features
 
+      - name: Clippy
+        run: cargo clippy --all-features -- -D warnings
+
       - name: Build CLI
         run: cargo build --features cli
