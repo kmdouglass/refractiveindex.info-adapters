@@ -53,14 +53,7 @@ fn store(
     let catalog: Catalog = serde_yaml::from_reader(reader)?;
 
     // Parse the catalog into this library's internal representation
-    match catalog_choice {
-        CatalogChoice::N2 => {
-            std::env::set_current_dir("data-n2")?;
-        }
-        CatalogChoice::NK => {
-            std::env::set_current_dir("data-nk")?;
-        }
-    }
+    std::env::set_current_dir("data")?;
     let mut store = Store::try_from(catalog)?;
 
     println!("Changing directory back to {}", &current_dir.display());

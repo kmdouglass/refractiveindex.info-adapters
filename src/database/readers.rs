@@ -102,3 +102,145 @@ impl TryFrom<Catalog> for Store {
         Ok(store)
     }
 }
+
+#[cfg(feature = "cli")]
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::database::{BookContent, Catalog, CatalogEntry, Shelf, ShelfContent};
+    use crate::Store;
+    use std::path::PathBuf;
+
+    fn johnson_path() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("refractiveindex.info-database/database/data/main/Ag/nk/Johnson.yml")
+    }
+
+    fn minimal_catalog(data: PathBuf) -> Catalog {
+        vec![CatalogEntry::Shelf(Shelf {
+            shelf: "main".to_string(),
+            name: "MAIN - simple inorganic materials".to_string(),
+            info: None,
+            content: vec![ShelfContent::Book {
+                book: "Ag".to_string(),
+                name: "Ag (Silver)".to_string(),
+                info: None,
+                content: vec![BookContent::Page {
+                    page: "Johnson".to_string(),
+                    name: "Johnson and Christy 1972: n,k 0.188-1.94 um".to_string(),
+                    data,
+                    info: None,
+                }],
+            }],
+        })]
+    }
+
+    #[test]
+    fn test_catalog_to_store_inserts_material() {
+        let store = Store::try_from(minimal_catalog(johnson_path())).unwrap();
+        let material = store.get("main:Ag:Johnson");
+        assert!(material.is_some());
+        let m = material.unwrap();
+        assert_eq!(m.shelf, "MAIN - simple inorganic materials");
+        assert_eq!(m.book, "Ag (Silver)");
+        assert_eq!(m.page, "Johnson and Christy 1972: n,k 0.188-1.94 um");
+    }
+
+    #[test]
+    fn test_catalog_to_store_tracks_dividers() {
+        let catalog = vec![CatalogEntry::Shelf(Shelf {
+            shelf: "main".to_string(),
+            name: "MAIN - simple inorganic materials".to_string(),
+            info: None,
+            content: vec![
+                ShelfContent::Divider {
+                    divider: "Ag - Silver".to_string(),
+                },
+                ShelfContent::Book {
+                    book: "Ag".to_string(),
+                    name: "Ag (Silver)".to_string(),
+                    info: None,
+                    content: vec![
+                        BookContent::Divider {
+                            divider: "Experimental data: bulk, thick film".to_string(),
+                        },
+                        BookContent::Page {
+                            page: "Johnson".to_string(),
+                            name: "Johnson and Christy 1972: n,k 0.188-1.94 um".to_string(),
+                            data: johnson_path(),
+                            info: None,
+                        },
+                    ],
+                },
+            ],
+        })];
+
+        let store = Store::try_from(catalog).unwrap();
+        let m = store.get("main:Ag:Johnson").unwrap();
+        assert_eq!(m.shelf_divider, Some("Ag - Silver".to_string()));
+        assert_eq!(
+            m.book_divider,
+            Some("Experimental data: bulk, thick film".to_string())
+        );
+    }
+
+    #[test]
+    fn test_catalog_to_store_skips_invalid_page() {
+        let catalog = vec![CatalogEntry::Shelf(Shelf {
+            shelf: "main".to_string(),
+            name: "MAIN - simple inorganic materials".to_string(),
+            info: None,
+            content: vec![ShelfContent::Book {
+                book: "Ag".to_string(),
+                name: "Ag (Silver)".to_string(),
+                info: None,
+                content: vec![
+                    BookContent::Page {
+                        page: "Johnson".to_string(),
+                        name: "Johnson and Christy 1972: n,k 0.188-1.94 um".to_string(),
+                        data: johnson_path(),
+                        info: None,
+                    },
+                    BookContent::Page {
+                        page: "Invalid".to_string(),
+                        name: "Invalid entry".to_string(),
+                        data: PathBuf::from("/nonexistent/path.yml"),
+                        info: None,
+                    },
+                ],
+            }],
+        })];
+
+        let store = Store::try_from(catalog).unwrap();
+        assert!(store.get("main:Ag:Johnson").is_some());
+        assert!(store.get("main:Ag:Invalid").is_none());
+    }
+
+    #[test]
+    fn test_catalog_to_store_skips_top_level_divider() {
+        let catalog = vec![
+            CatalogEntry::Divider {
+                divider: "Research data".to_string(),
+            },
+            CatalogEntry::Shelf(Shelf {
+                shelf: "main".to_string(),
+                name: "MAIN - simple inorganic materials".to_string(),
+                info: None,
+                content: vec![ShelfContent::Book {
+                    book: "Ag".to_string(),
+                    name: "Ag (Silver)".to_string(),
+                    info: None,
+                    content: vec![BookContent::Page {
+                        page: "Johnson".to_string(),
+                        name: "Johnson and Christy 1972: n,k 0.188-1.94 um".to_string(),
+                        data: johnson_path(),
+                        info: None,
+                    }],
+                }],
+            }),
+        ];
+
+        let store = Store::try_from(catalog).unwrap();
+        assert!(store.get("main:Ag:Johnson").is_some());
+    }
+}

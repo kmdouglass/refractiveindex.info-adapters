@@ -33,3 +33,7 @@ cli = [ "dep:bitcode", "dep:clap", "dep:heck", "dep:serde_json", "dep:serde_yaml
 name = "ria"
 src = "src/main.rs"
 required-features = ["cli"]
+
+[[test]]
+name = "cli_integration"
+required-features = ["cli"]

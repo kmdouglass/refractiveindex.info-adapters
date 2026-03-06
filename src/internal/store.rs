@@ -430,6 +430,142 @@ mod test {
     use super::*;
     use approx::assert_abs_diff_eq;
 
+    fn test_material(data: Vec<DispersionData>) -> Material {
+        Material {
+            shelf: "main".to_string(),
+            book: "Ag (Silver)".to_string(),
+            page: "Johnson and Christy 1972".to_string(),
+            comments: "".to_string(),
+            references: "".to_string(),
+            data,
+            shelf_divider: None,
+            book_divider: None,
+        }
+    }
+
+    #[test]
+    fn test_store_get_existing() {
+        let mut store = Store::default();
+        store.insert("main:Ag:Johnson".to_string(), test_material(vec![]));
+        assert!(store.get("main:Ag:Johnson").is_some());
+    }
+
+    #[test]
+    fn test_store_get_missing() {
+        let store = Store::default();
+        assert!(store.get("main:Ag:Johnson").is_none());
+    }
+
+    #[test]
+    fn test_store_insert_and_keys() {
+        let mut store = Store::default();
+        store.insert("main:Ag:Johnson".to_string(), test_material(vec![]));
+        store.insert("main:Ag:Choi".to_string(), test_material(vec![]));
+        let mut keys: Vec<&String> = store.keys().collect();
+        keys.sort();
+        assert_eq!(keys.len(), 2);
+        assert!(keys.contains(&&"main:Ag:Johnson".to_string()));
+        assert!(keys.contains(&&"main:Ag:Choi".to_string()));
+    }
+
+    #[test]
+    fn test_store_remove() {
+        let mut store = Store::default();
+        store.insert("main:Ag:Johnson".to_string(), test_material(vec![]));
+        store.remove("main:Ag:Johnson");
+        assert!(store.get("main:Ag:Johnson").is_none());
+    }
+
+    #[test]
+    fn test_store_remove_many() {
+        let mut store = Store::default();
+        store.insert("a".to_string(), test_material(vec![]));
+        store.insert("b".to_string(), test_material(vec![]));
+        store.insert("c".to_string(), test_material(vec![]));
+        store.remove_many(&["a".to_string(), "b".to_string()]);
+        assert!(store.get("a").is_none());
+        assert!(store.get("b").is_none());
+        assert!(store.get("c").is_some());
+    }
+
+    #[test]
+    fn test_store_retain() {
+        let mut store = Store::default();
+        store.insert("main:Ag:Johnson".to_string(), test_material(vec![]));
+        store.insert("main:Ag:Choi".to_string(), test_material(vec![]));
+        store.insert("glass:Schott:BK7".to_string(), test_material(vec![]));
+        store.retain(|key, _| key.starts_with("main:"));
+        assert!(store.get("main:Ag:Johnson").is_some());
+        assert!(store.get("main:Ag:Choi").is_some());
+        assert!(store.get("glass:Schott:BK7").is_none());
+    }
+
+    #[test]
+    fn test_material_n_with_formula() {
+        // N-BK7 Sellmeier-2 coefficients
+        let data = DispersionData::Formula2 {
+            wavelength_range: [0.3, 2.5],
+            c: vec![
+                0.0,
+                1.03961212,
+                0.00600069867,
+                0.231792344,
+                0.0200179144,
+                1.01046945,
+                103.560653,
+            ],
+        };
+        let material = test_material(vec![data]);
+        let n = material.n(0.5876).unwrap();
+        assert_abs_diff_eq!(n, 1.51680, epsilon = 1e-5);
+    }
+
+    #[test]
+    fn test_material_k_no_imaginary_data() {
+        let data = DispersionData::Formula2 {
+            wavelength_range: [0.3, 2.5],
+            c: vec![
+                0.0,
+                1.03961212,
+                0.00600069867,
+                0.231792344,
+                0.0200179144,
+                1.01046945,
+                103.560653,
+            ],
+        };
+        let material = test_material(vec![data]);
+        let k = material.k(0.5876).unwrap();
+        assert!(k.is_none());
+    }
+
+    #[test]
+    fn test_material_n_no_real_data() {
+        let data = DispersionData::TabulatedK {
+            data: vec![[0.5, 0.1], [0.6, 0.2]],
+        };
+        let material = test_material(vec![data]);
+        assert!(material.n(0.55).is_err());
+    }
+
+    #[test]
+    fn test_interpolate_wavelength_out_of_range() {
+        let data = DispersionData::Formula2 {
+            wavelength_range: [0.3, 2.5],
+            c: vec![
+                0.0,
+                1.03961212,
+                0.00600069867,
+                0.231792344,
+                0.0200179144,
+                1.01046945,
+                103.560653,
+            ],
+        };
+        let err = data.interpolate(0.1).unwrap_err();
+        assert!(err.to_string().contains("outside the range"));
+    }
+
     #[test]
     fn test_interpolate_formula_1() {
         // Water Ice at 150 K from refractiveindex.info

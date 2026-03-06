@@ -212,6 +212,41 @@ mod test {
     use super::*;
 
     #[test]
+    #[cfg(feature = "cli")]
+    fn test_parse_material_propagates_dividers() {
+        use crate::database::{Data, RIInfoMaterial};
+
+        let material = RIInfoMaterial {
+            references: "Test ref".to_string(),
+            comments: "Test comment".to_string(),
+            data: vec![Data::Formula2 {
+                wavelength_range: "0.3 2.5".to_string(),
+                coefficients: "0.0 1.03961212 0.00600069867 0.231792344 0.0200179144 1.01046945 103.560653".to_string(),
+            }],
+            specs: "".to_string(),
+        };
+
+        let result = parse_material(
+            material,
+            "main",
+            "Ag (Silver)",
+            "Johnson",
+            Some("Ag - Silver".to_string()),
+            Some("Bulk".to_string()),
+        )
+        .unwrap();
+
+        assert_eq!(result.shelf, "main");
+        assert_eq!(result.book, "Ag (Silver)");
+        assert_eq!(result.page, "Johnson");
+        assert_eq!(result.references, "Test ref");
+        assert_eq!(result.comments, "Test comment");
+        assert_eq!(result.shelf_divider, Some("Ag - Silver".to_string()));
+        assert_eq!(result.book_divider, Some("Bulk".to_string()));
+        assert_eq!(result.data.len(), 1);
+    }
+
+    #[test]
     fn test_parse_coefficients() {
         let data = "  1.0  2.0  3.0  ";
         let result = parse_coefficients(data).unwrap();
