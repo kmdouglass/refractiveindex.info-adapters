@@ -11,7 +11,7 @@ exclude = [ "refractiveindex.info-database/" ]
 
 [lib]
 name = "lib_ria"
-src = "src/lib.rs"
+path = "src/lib.rs"
 
 [dependencies]
 anyhow = "1.0"
@@ -31,7 +31,7 @@ cli = [ "dep:bitcode", "dep:clap", "dep:heck", "dep:serde_json", "dep:serde_yaml
 
 [[bin]]
 name = "ria"
-src = "src/main.rs"
+path = "src/main.rs"
 required-features = ["cli"]
 
 [[test]]
