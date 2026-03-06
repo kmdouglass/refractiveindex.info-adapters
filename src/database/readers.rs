@@ -2,7 +2,7 @@
 use anyhow::Error;
 
 use crate::database::parsers::parse_material;
-use crate::database::{BookContent, Catalog, RIInfoMaterial, ShelfContent};
+use crate::database::{BookContent, Catalog, CatalogEntry, RIInfoMaterial, ShelfContent};
 use crate::internal::store::Store;
 
 #[cfg(feature = "cli")]
@@ -20,14 +20,20 @@ impl TryFrom<Catalog> for Store {
     fn try_from(catalog: Catalog) -> Result<Self, Self::Error> {
         let mut store = Store::default();
 
-        for shelf in catalog {
+        for entry in catalog {
+            let shelf = match entry {
+                CatalogEntry::Divider { .. } => continue,
+                CatalogEntry::Shelf(shelf) => shelf,
+            };
+
             let shelf_key = &shelf.shelf;
             let shelf_name = &shelf.name;
+            let mut current_shelf_divider: Option<String> = None;
 
             for shelf_content in shelf.content {
                 match shelf_content {
-                    ShelfContent::Divider { divider: _ } => {
-                        // store divider
+                    ShelfContent::Divider { divider } => {
+                        current_shelf_divider = Some(divider);
                     }
                     ShelfContent::Book {
                         book,
@@ -37,11 +43,12 @@ impl TryFrom<Catalog> for Store {
                     } => {
                         let book_key = &book;
                         let book_name = &name;
+                        let mut current_book_divider: Option<String> = None;
 
                         for book_content in content {
                             let (page, name, data, _info) = match book_content {
-                                BookContent::Divider { divider: _ } => {
-                                    // Skip the divider for now
+                                BookContent::Divider { divider } => {
+                                    current_book_divider = Some(divider);
                                     continue;
                                 }
                                 BookContent::Page {
@@ -70,13 +77,19 @@ impl TryFrom<Catalog> for Store {
                             };
 
                             // Parse the material data
-                            let item =
-                                match parse_material(material, shelf_name, book_name, page_name) {
-                                    Ok(item) => item,
-                                    Err(_) => {
-                                        continue;
-                                    }
-                                };
+                            let item = match parse_material(
+                                material,
+                                shelf_name,
+                                book_name,
+                                page_name,
+                                current_shelf_divider.clone(),
+                                current_book_divider.clone(),
+                            ) {
+                                Ok(item) => item,
+                                Err(_) => {
+                                    continue;
+                                }
+                            };
 
                             let key = format!("{}:{}:{}", shelf_key, book_key, page_key);
                             store.insert(key, item);

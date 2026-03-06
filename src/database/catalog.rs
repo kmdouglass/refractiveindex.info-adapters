@@ -5,7 +5,17 @@
 //! shelf, book, and page key.
 use serde::{Deserialize, Serialize};
 
-pub type Catalog = Vec<Shelf>;
+pub type Catalog = Vec<CatalogEntry>;
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(untagged)]
+pub enum CatalogEntry {
+    Divider {
+        #[serde(rename = "DIVIDER")]
+        divider: String,
+    },
+    Shelf(Shelf),
+}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
@@ -61,6 +71,7 @@ pub struct Shelf {
 mod tests {
     fn yaml() -> &'static str {
         "
+        - DIVIDER: \"Research data\"
         - SHELF: main
           name: \"MAIN - simple inorganic materials\"
           content:

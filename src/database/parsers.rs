@@ -8,6 +8,8 @@ pub(super) fn parse_material(
     shelf: &str,
     book: &str,
     page: &str,
+    shelf_divider: Option<String>,
+    book_divider: Option<String>,
 ) -> Result<Material> {
     // TODO: Ignore any errors and continue parsing;
     // TODO: Log the errors
@@ -23,6 +25,8 @@ pub(super) fn parse_material(
         references: material.references,
         comments: material.comments,
         data,
+        shelf_divider,
+        book_divider,
     })
 }
 

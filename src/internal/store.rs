@@ -18,6 +18,13 @@ pub struct Material {
     pub comments: String,
     pub references: String,
     pub data: Vec<DispersionData>,
+    /// The DIVIDER label preceding this page's BOOK entry within the shelf
+    /// (e.g. "Ag - Silver"). `None` if no DIVIDER precedes the book.
+    pub shelf_divider: Option<String>,
+    /// The DIVIDER label preceding this page within the book
+    /// (e.g. "Gas", "Bulk", "Thin film", "Experimental data: bulk, thick film").
+    /// `None` if no DIVIDER precedes the page.
+    pub book_divider: Option<String>,
 }
 
 #[derive(Debug)]
