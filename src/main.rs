@@ -66,7 +66,7 @@ fn store(
         let file = std::fs::File::open(include)?;
         let reader = std::io::BufReader::new(file);
         let keys: Vec<String> = reader.lines().collect::<Result<_, _>>()?;
-        store.retain(|key, _| keys.contains(&key));
+        store.retain(|key, _| keys.contains(key));
     } else if let Some(exclude) = exclude {
         println!("Filtering store keys using {}", exclude.display());
         let file = std::fs::File::open(exclude)?;
