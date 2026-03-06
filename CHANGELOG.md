@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/kmdouglass/refractiveindex.info-adapters/compare/v1.0.0...v1.0.1) (2026-03-06)
+
+
+### Bug Fixes
+
+* add write to the artifact release job permissions ([e392154](https://github.com/kmdouglass/refractiveindex.info-adapters/commit/e39215426d2d394d9df46c37715ae6548d3de9be))
+
 ## [1.0.0](https://github.com/kmdouglass/refractiveindex.info-adapters/compare/v0.3.0...v1.0.0) (2026-03-06)
 
 
