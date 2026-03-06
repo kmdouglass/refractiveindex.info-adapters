@@ -22,8 +22,8 @@ pub struct Material {
     /// (e.g. "Ag - Silver"). `None` if no DIVIDER precedes the book.
     pub shelf_divider: Option<String>,
     /// The DIVIDER label preceding this page within the book
-    /// (e.g. "Gas", "Bulk", "Thin film", "Experimental data: bulk, thick film").
-    /// `None` if no DIVIDER precedes the page.
+    /// (e.g. "Gas", "Bulk", "Thin film", "Experimental data: bulk, thick
+    /// film"). `None` if no DIVIDER precedes the page.
     pub book_divider: Option<String>,
 }
 

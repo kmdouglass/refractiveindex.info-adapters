@@ -5,8 +5,7 @@ use std::path::PathBuf;
 use std::process::Command;
 
 fn db_path() -> PathBuf {
-    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("refractiveindex.info-database/database")
+    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("refractiveindex.info-database/database")
 }
 
 fn ria() -> Command {
@@ -17,14 +16,25 @@ fn ria() -> Command {
 fn test_store_nk_creates_json() {
     let output = env::temp_dir().join("ria_test_store_nk.dat");
     let status = ria()
-        .args(["store", "--path", db_path().to_str().unwrap(), "--output", output.to_str().unwrap()])
+        .args([
+            "store",
+            "--path",
+            db_path().to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+        ])
         .status()
         .expect("failed to run ria");
 
     assert!(status.success(), "ria store exited with non-zero status");
     let content = fs::read(&output).expect("output file not found");
     assert!(!content.is_empty(), "output file is empty");
-    assert_eq!(content[0], b'{', "output does not start with '{{': got {:?}", &content[..content.len().min(20)]);
+    assert_eq!(
+        content[0],
+        b'{',
+        "output does not start with '{{': got {:?}",
+        &content[..content.len().min(20)]
+    );
 
     fs::remove_file(&output).ok();
 }
@@ -33,7 +43,13 @@ fn test_store_nk_creates_json() {
 fn test_store_then_validate_roundtrip() {
     let output = env::temp_dir().join("ria_test_roundtrip.dat");
     let store_status = ria()
-        .args(["store", "--path", db_path().to_str().unwrap(), "--output", output.to_str().unwrap()])
+        .args([
+            "store",
+            "--path",
+            db_path().to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+        ])
         .status()
         .expect("failed to run ria store");
     assert!(store_status.success(), "ria store failed");
@@ -51,13 +67,27 @@ fn test_store_then_validate_roundtrip() {
 fn test_store_bitcode_then_validate() {
     let output = env::temp_dir().join("ria_test_bitcode.dat");
     let store_status = ria()
-        .args(["-f", "bitcode", "store", "--path", db_path().to_str().unwrap(), "--output", output.to_str().unwrap()])
+        .args([
+            "-f",
+            "bitcode",
+            "store",
+            "--path",
+            db_path().to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+        ])
         .status()
         .expect("failed to run ria store");
     assert!(store_status.success(), "ria store (bitcode) failed");
 
     let validate_status = ria()
-        .args(["-f", "bitcode", "validate", "--input", output.to_str().unwrap()])
+        .args([
+            "-f",
+            "bitcode",
+            "validate",
+            "--input",
+            output.to_str().unwrap(),
+        ])
         .status()
         .expect("failed to run ria validate");
     assert!(validate_status.success(), "ria validate (bitcode) failed");
@@ -76,9 +106,12 @@ fn test_store_with_include_filter() {
     let status = ria()
         .args([
             "store",
-            "--path", db_path().to_str().unwrap(),
-            "--output", output.to_str().unwrap(),
-            "--include", include_file.to_str().unwrap(),
+            "--path",
+            db_path().to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+            "--include",
+            include_file.to_str().unwrap(),
         ])
         .status()
         .expect("failed to run ria store");
@@ -88,8 +121,16 @@ fn test_store_with_include_filter() {
     let json: serde_json::Value = serde_json::from_str(&content).expect("invalid JSON output");
     let inner = json.get("inner").expect("missing 'inner' key");
     let obj = inner.as_object().expect("'inner' is not an object");
-    assert_eq!(obj.len(), 1, "expected exactly one entry, got {}", obj.len());
-    assert!(obj.contains_key("main:Ag:Johnson"), "key 'main:Ag:Johnson' not found");
+    assert_eq!(
+        obj.len(),
+        1,
+        "expected exactly one entry, got {}",
+        obj.len()
+    );
+    assert!(
+        obj.contains_key("main:Ag:Johnson"),
+        "key 'main:Ag:Johnson' not found"
+    );
 
     fs::remove_file(&include_file).ok();
     fs::remove_file(&output).ok();
@@ -106,9 +147,12 @@ fn test_store_with_exclude_filter() {
     let status = ria()
         .args([
             "store",
-            "--path", db_path().to_str().unwrap(),
-            "--output", output.to_str().unwrap(),
-            "--exclude", exclude_file.to_str().unwrap(),
+            "--path",
+            db_path().to_str().unwrap(),
+            "--output",
+            output.to_str().unwrap(),
+            "--exclude",
+            exclude_file.to_str().unwrap(),
         ])
         .status()
         .expect("failed to run ria store");
@@ -118,7 +162,10 @@ fn test_store_with_exclude_filter() {
     let json: serde_json::Value = serde_json::from_str(&content).expect("invalid JSON output");
     let inner = json.get("inner").expect("missing 'inner' key");
     let obj = inner.as_object().expect("'inner' is not an object");
-    assert!(!obj.contains_key("main:Ag:Johnson"), "excluded key 'main:Ag:Johnson' still present");
+    assert!(
+        !obj.contains_key("main:Ag:Johnson"),
+        "excluded key 'main:Ag:Johnson' still present"
+    );
 
     fs::remove_file(&exclude_file).ok();
     fs::remove_file(&output).ok();

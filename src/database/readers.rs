@@ -106,7 +106,6 @@ impl TryFrom<Catalog> for Store {
 #[cfg(feature = "cli")]
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::database::{BookContent, Catalog, CatalogEntry, Shelf, ShelfContent};
     use crate::Store;
     use std::path::PathBuf;

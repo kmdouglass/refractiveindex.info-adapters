@@ -221,7 +221,9 @@ mod test {
             comments: "Test comment".to_string(),
             data: vec![Data::Formula2 {
                 wavelength_range: "0.3 2.5".to_string(),
-                coefficients: "0.0 1.03961212 0.00600069867 0.231792344 0.0200179144 1.01046945 103.560653".to_string(),
+                coefficients:
+                    "0.0 1.03961212 0.00600069867 0.231792344 0.0200179144 1.01046945 103.560653"
+                        .to_string(),
             }],
             specs: "".to_string(),
         };
